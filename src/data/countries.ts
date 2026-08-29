@@ -259,7 +259,7 @@ export const COUNTRIES: Country[] = [
     flagImage: "/flags/EG.svg",
     colors: ["#CE1126", "#C09300"],
     anthem: { title: "Bilady, Bilady, Bilady", source: "Bilady, Bilady, Bilady.ogg" },
-    song: { search: "Enta Omri Umm Kulthum", match: "enta oumry" },
+    song: { search: "Nour El Ain Amr Diab habibi", match: "noor al ain — amr diab" },
   },
   {
     code: "AR",
