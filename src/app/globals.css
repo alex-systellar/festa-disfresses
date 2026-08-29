@@ -89,6 +89,7 @@ body {
 .gate-inner.gate-solo {
   max-width: 30rem;
   flex-direction: column;
+  gap: clamp(0.9rem, 3.5vh, 2.5rem);
 }
 
 .gate-logo {
@@ -96,14 +97,17 @@ body {
   height: auto;
 }
 
-/* Short screens: the cup is decoration, and the title already says the name. */
-@media (max-height: 700px) {
+/* Stacked and short: the cup is decoration, and the title already says the
+   name. Side by side there is room for it however short the screen is. */
+@media (max-height: 700px) and (max-width: 899px) {
   .gate-logo {
     display: none;
   }
 }
 
-@media (min-width: 900px) {
+/* Side by side as soon as there is room sideways — which on a laptop in
+   landscape there always is, and downwards there never is. */
+@media (min-width: 900px), (min-width: 700px) and (max-height: 34rem) {
   .gate-inner {
     flex-direction: row;
     align-items: center;
