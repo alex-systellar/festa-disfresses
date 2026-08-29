@@ -23,7 +23,7 @@ export function Reveal({
   onReset,
   rerollError,
 }: RevealProps) {
-  const { country, name, duplicate, canReroll, remaining } = result;
+  const { country, duplicate, canReroll, remaining } = result;
   const [c1, c2] = country.colors;
   const [confirming, setConfirming] = useState(false);
 
@@ -75,17 +75,22 @@ export function Reveal({
       style={{ "--c1": c1, "--c2": c2 } as CSSProperties}
     >
       <div className="reveal-stage rise">
-        <header className="flex items-baseline justify-between gap-4">
-          <p className="eyebrow truncate">
-            {name ? `${name}, ` : ""}
-            {calm ? "ja tens país" : "et toca"}
-          </p>
-          <p className="shrink-0 font-mono text-xs tracking-[0.2em] text-paper/50">
-            {country.code}
-          </p>
-        </header>
-
         <div className="reveal-body">
+          <div className="text-center">
+            {/* Not an <h1>: the country below is the page's subject and holds
+                that role, so this stays a paragraph wearing the title style. */}
+            <p className="section-title">Ja tens país!</p>
+            <p className="mt-2.5 font-mono text-[0.7rem] uppercase tracking-[0.2em] text-paper/60">
+              Prepara la disfressa ·{" "}
+              <Link
+                href="/com-funciona"
+                className="inline-block px-1 py-1.5 underline decoration-paper/30 underline-offset-4 transition hover:text-turquesa"
+              >
+                les normes
+              </Link>
+            </p>
+          </div>
+
           <div className="plinth">
             <span className="halo" aria-hidden="true" />
             <Flag
@@ -167,14 +172,9 @@ export function Reveal({
               ? `Queden ${remaining} països sense amo`
               : "Tots els països repartits"}
           </p>
-          <div className="flex flex-col items-center gap-1 sm:flex-row sm:gap-5">
-            <Link href="/com-funciona" className="btn-ghost">
-              Com funciona
-            </Link>
-            <button type="button" onClick={onReset} className="btn-ghost">
-              No sóc jo · comença de nou
-            </button>
-          </div>
+          <button type="button" onClick={onReset} className="btn-ghost">
+            No sóc jo · comença de nou
+          </button>
         </footer>
       </div>
     </main>
