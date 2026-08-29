@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Festa de Disfresses">
+<!-- Festa de Disfresses. Letterforms are Bungee (David Jonathan Ross, SIL Open Font License 1.1) converted to outlines, so the mark renders without a webfont: favicons and chat avatars load no @font-face. -->
+  <title>Festa de Disfresses</title>
+  <defs>
+    <radialGradient id="b1" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse"
+      gradientTransform="translate(-30 -60) scale(470)">
+      <stop stop-color="#FF2E88" stop-opacity="0.75"/>
+      <stop offset="0.55" stop-color="#FF2E88" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#FF2E88" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="b2" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse"
+      gradientTransform="translate(585 600) scale(430)">
+      <stop stop-color="#FFC93C" stop-opacity="0.55"/>
+      <stop offset="0.42" stop-color="#FFC93C" stop-opacity="0.10"/>
+      <stop offset="1" stop-color="#FFC93C" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="b3" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse"
+      gradientTransform="translate(256 256) scale(400)">
+      <stop stop-color="#1D0F33" stop-opacity="0.95"/>
+      <stop offset="0.7" stop-color="#1D0F33" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="100%" height="100%" fill="#120A1F"/>
+  <rect width="100%" height="100%" fill="url(#b3)"/>
+  <rect width="100%" height="100%" fill="url(#b1)"/>
+  <rect width="100%" height="100%" fill="url(#b2)"/>
+  <rect width="100%" height="100%" fill="#120A1F" opacity="0.18"/>
+  <g transform="translate(54.66 377.98) scale(0.30645)" fill="#FF2E88"><path d="M260.0 0.0H105.0Q69.0 0.0 69.0 -36.0V-684.0Q69.0 -720.0 105.0 -720.0H551.0Q587.0 -720.0 587.0 -684.0V-565.0Q587.0 -529.0 551.0 -529.0H296.0V-425.0H470.0Q506.0 -425.0 506.0 -389.0V-269.0Q506.0 -233.0 470.0 -233.0H296.0V-36.0Q296.0 0.0 260.0 0.0Z M1060.0 0.0H723.0Q687.0 0.0 687.0 -36.0V-684.0Q687.0 -720.0 723.0 -720.0H1060.0Q1186.0 -720.0 1246.0 -670.0Q1306.0 -620.0 1306.0 -516.0V-204.0Q1306.0 -100.0 1246.0 -50.0Q1186.0 0.0 1060.0 0.0ZM914.0 -529.0V-189.0H1033.0Q1080.0 -189.0 1080.0 -238.0V-481.0Q1080.0 -529.0 1033.0 -529.0Z"/></g>
+  <g transform="translate(39.34 362.66) scale(0.30645)" fill="#FFF3E2"><path d="M260.0 0.0H105.0Q69.0 0.0 69.0 -36.0V-684.0Q69.0 -720.0 105.0 -720.0H551.0Q587.0 -720.0 587.0 -684.0V-565.0Q587.0 -529.0 551.0 -529.0H296.0V-425.0H470.0Q506.0 -425.0 506.0 -389.0V-269.0Q506.0 -233.0 470.0 -233.0H296.0V-36.0Q296.0 0.0 260.0 0.0Z M1060.0 0.0H723.0Q687.0 0.0 687.0 -36.0V-684.0Q687.0 -720.0 723.0 -720.0H1060.0Q1186.0 -720.0 1246.0 -670.0Q1306.0 -620.0 1306.0 -516.0V-204.0Q1306.0 -100.0 1246.0 -50.0Q1186.0 0.0 1060.0 0.0ZM914.0 -529.0V-189.0H1033.0Q1080.0 -189.0 1080.0 -238.0V-481.0Q1080.0 -529.0 1033.0 -529.0Z"/></g>
+</svg>
