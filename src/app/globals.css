@@ -88,7 +88,6 @@ body {
 /* The RSVP and the two goodbyes are a single card at every width. */
 .gate-inner.gate-solo {
   max-width: 30rem;
-  flex-direction: row-reverse;
   flex-direction: column;
 }
 
@@ -258,8 +257,8 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: clamp(1.25rem, 3vw, 2rem);
-  padding-block: clamp(0.75rem, 2vw, 1.5rem);
+  gap: clamp(0.75rem, 2.6vh, 2rem);
+  padding-block: clamp(0.5rem, 1.6vh, 1.5rem);
 }
 
 /* The anthem keeps the ticket-stub language without a full card around it. */
@@ -267,7 +266,7 @@ body {
   width: 100%;
   max-width: 34rem;
   margin-inline: auto;
-  padding: clamp(1rem, 3vw, 1.5rem);
+  padding: clamp(0.85rem, 2.2vh, 1.5rem);
   border: 2px dashed rgba(255, 243, 226, 0.26);
   border-radius: 1.25rem;
   background: rgba(18, 10, 31, 0.42);
@@ -408,7 +407,7 @@ body {
   position: relative;
   display: grid;
   place-items: center;
-  width: min(58vw, 13.5rem);
+  width: min(58vw, 34vh, 13.5rem);
   aspect-ratio: 1 / 0.82;
   border-radius: 18px;
   background: linear-gradient(180deg, #241338 0%, #150b25 48%, #1d1030 52%, #100819 100%);
@@ -485,7 +484,7 @@ body {
   display: grid;
   place-items: center;
   width: fit-content;
-  padding: clamp(1.25rem, 4vw, 2.5rem);
+  padding: clamp(0.75rem, 3vh, 2.5rem);
   margin-inline: auto;
 }
 
@@ -519,7 +518,9 @@ body {
 
 .big-flag {
   position: relative;
-  width: clamp(140px, 26vw, 260px);
+  /* The height term is the one that matters: a wide, short laptop window has
+     plenty of room sideways and none to spare downwards. */
+  width: clamp(110px, min(26vw, 26vh), 260px);
   border-radius: 0.6rem;
   box-shadow:
     0 0 0 1px rgba(255, 243, 226, 0.28),
@@ -528,7 +529,7 @@ body {
 
 .country-name {
   position: relative;
-  font-size: clamp(3rem, 10vw, 6rem);
+  font-size: clamp(2rem, min(10vw, 9vh), 6rem);
   font-weight: 800;
   letter-spacing: -0.035em;
   line-height: 0.94;

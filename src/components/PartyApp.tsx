@@ -3,8 +3,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import type { Country } from "@/data/countries";
+import { Farewell } from "@/components/Farewell";
 import { Gate } from "@/components/Gate";
 import { Reveal } from "@/components/Reveal";
+import { Rsvp, type RsvpAnswer } from "@/components/Rsvp";
 import { SlotReel } from "@/components/SlotReel";
 
 const STORAGE_KEY = "festa-disfresses:guest";
@@ -27,7 +29,14 @@ const ERROR_TEXT = {
     "No trobem la teva inscripció. Torna a entrar el nom i el correu.",
 } as const;
 
-type Phase = "boot" | "gate" | "spinning" | "reveal";
+type Phase =
+  | "boot"
+  | "gate"
+  | "rsvp"
+  | "declined"
+  | "maybe"
+  | "spinning"
+  | "reveal";
 
 export type ClaimResult = {
   country: Country;
@@ -171,8 +180,11 @@ export function PartyApp() {
     };
   }, []);
 
+  // The details are only checked here; nothing is claimed until the guest has
+  // said they are coming. A country handed to a "no" is a country nobody at
+  // the party gets to wear.
   const handleSubmit = useCallback(
-    async (event: FormEvent<HTMLFormElement>) => {
+    (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault();
       if (busy) return;
 
@@ -190,66 +202,92 @@ export function PartyApp() {
 
       setBannerError(null);
       setRerollError(null);
-      setBusy(true);
-      setIsReroll(false);
-      pendingRef.current = null;
-      setPending(null);
-
-      // Deliberately no spin yet: we cannot know whether this email is a fresh
-      // draw or a guest coming back until the server answers. Spinning first
-      // would stage a sorteig for someone whose country was decided long ago.
-      // The gate shows its busy state while we wait.
-      try {
-        const response = await fetch("/api/claim", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ email: cleanEmail, name: cleanName }),
-        });
-        const data: unknown = await response.json().catch(() => null);
-
-        if (!response.ok || !isClaimResult(data)) {
-          const code = errorCode(data);
-          setPhase("gate");
-          setBusy(false);
-          if (code === "invalid_email") {
-            setEmailError(ERROR_TEXT.invalidEmail);
-          } else if (code === "invalid_email_domain") {
-            setEmailError(ERROR_TEXT.invalidEmailDomain);
-          } else if (code === "invalid_name") {
-            setNameError(ERROR_TEXT.invalidName);
-          } else if (code === "ip_limit") {
-            setBannerError(ERROR_TEXT.ipLimit);
-          } else {
-            setBannerError(ERROR_TEXT.storage);
-          }
-          return;
-        }
-
-        writeStoredGuest({ email: cleanEmail, name: cleanName });
-
-        // Only a genuinely new assignment earns the sorteig. A returning guest
-        // gets their country straight away, exactly like the localStorage path.
-        const returning = !data.isNew;
-        if (returning || prefersReducedMotion()) {
-          setCalm(returning);
-          setResult(data);
-          setPhase("reveal");
-          setBusy(false);
-        } else {
-          setCalm(false);
-          setSpinKey((key) => key + 1);
-          setPhase("spinning");
-          // The reel keeps turning until it has both a result and its minimum.
-          pendingRef.current = data;
-          setPending(data);
-        }
-      } catch {
-        setPhase("gate");
-        setBusy(false);
-        setBannerError(ERROR_TEXT.network);
-      }
+      setPhase("rsvp");
     },
     [busy, email, name],
+  );
+
+  const claim = useCallback(async () => {
+    const cleanName = name.trim().replace(/\s+/g, " ");
+    const cleanEmail = email.trim().toLowerCase();
+
+    setBannerError(null);
+    setRerollError(null);
+    setBusy(true);
+    setIsReroll(false);
+    pendingRef.current = null;
+    setPending(null);
+
+    // Deliberately no spin yet: we cannot know whether this email is a fresh
+    // draw or a guest coming back until the server answers. Spinning first
+    // would stage a sorteig for someone whose country was decided long ago.
+    // The RSVP shows its busy state while we wait.
+    try {
+      const response = await fetch("/api/claim", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ email: cleanEmail, name: cleanName }),
+      });
+      const data: unknown = await response.json().catch(() => null);
+
+      if (!response.ok || !isClaimResult(data)) {
+        const code = errorCode(data);
+        // Every one of these is fixed on the gate, not on the RSVP.
+        setPhase("gate");
+        setBusy(false);
+        if (code === "invalid_email") {
+          setEmailError(ERROR_TEXT.invalidEmail);
+        } else if (code === "invalid_email_domain") {
+          setEmailError(ERROR_TEXT.invalidEmailDomain);
+        } else if (code === "invalid_name") {
+          setNameError(ERROR_TEXT.invalidName);
+        } else if (code === "ip_limit") {
+          setBannerError(ERROR_TEXT.ipLimit);
+        } else {
+          setBannerError(ERROR_TEXT.storage);
+        }
+        return;
+      }
+
+      writeStoredGuest({ email: cleanEmail, name: cleanName });
+
+      // Only a genuinely new assignment earns the sorteig. A returning guest
+      // gets their country straight away, exactly like the localStorage path.
+      const returning = !data.isNew;
+      if (returning || prefersReducedMotion()) {
+        setCalm(returning);
+        setResult(data);
+        setPhase("reveal");
+        setBusy(false);
+      } else {
+        setCalm(false);
+        setSpinKey((key) => key + 1);
+        setPhase("spinning");
+        // The reel keeps turning until it has both a result and its minimum.
+        pendingRef.current = data;
+        setPending(data);
+      }
+    } catch {
+      setPhase("gate");
+      setBusy(false);
+      setBannerError(ERROR_TEXT.network);
+    }
+  }, [email, name]);
+
+  const handleAnswer = useCallback(
+    (answer: RsvpAnswer) => {
+      if (busy) return;
+      if (answer === "no") {
+        setPhase("declined");
+        return;
+      }
+      if (answer === "maybe") {
+        setPhase("maybe");
+        return;
+      }
+      void claim();
+    },
+    [busy, claim],
   );
 
   const handleReroll = useCallback(async () => {
@@ -344,6 +382,32 @@ export function PartyApp() {
       <main className="night center-safe flex items-center">
         <p className="eyebrow blink">Obrint la festa…</p>
       </main>
+    );
+  }
+
+  if (phase === "rsvp") {
+    return (
+      <Rsvp
+        name={name}
+        busy={busy}
+        onAnswer={handleAnswer}
+        onBack={() => setPhase("gate")}
+      />
+    );
+  }
+
+  if (phase === "declined" || phase === "maybe") {
+    return (
+      <Farewell
+        kind={phase === "declined" ? "no" : "maybe"}
+        // A "maybe" that comes back is a yes: draw straight away rather than
+        // asking the same question twice.
+        onReconsider={() => {
+          if (phase === "maybe") handleAnswer("yes");
+          else setPhase("rsvp");
+        }}
+        onReset={handleReset}
+      />
     );
   }
 

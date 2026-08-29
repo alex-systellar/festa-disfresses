@@ -31,22 +31,22 @@ export function Gate({
   busy,
 }: GateProps) {
   return (
-    <main className="night flex flex-col" style={GATE_STYLE}>
+    <main className="night gate-shell" style={GATE_STYLE}>
       <FlagMarquee />
 
-      <div className="center-safe flex flex-1 flex-col gap-10 px-5 pb-12 pt-8 sm:px-8 sm:pt-12">
-        <header className="rise mx-auto w-full max-w-xl">
+      <div className="gate-inner">
+        <header className="rise gate-poster poster-fit">
           {/* eslint-disable-next-line @next/next/no-img-element -- static local SVG; the optimizer does not process SVG */}
           <img
             src="/logo-cup.svg"
             alt=""
             aria-hidden="true"
-            className="mx-auto mb-6 w-24 sm:w-32"
+            className="gate-logo mx-auto mb-4"
           />
           <p className="eyebrow">
             {COUNTRIES.length} països · 1 nit · cap excusa
           </p>
-          <h1 className="poster-title mt-5">
+          <h1 className="poster-title mt-4">
             <span className="line-el">El</span>
             <span>
               Mundial<em className="tail">et</em>
@@ -54,7 +54,7 @@ export function Gate({
           </h1>
         </header>
 
-        <div className="mx-auto w-full max-w-xl">
+        <div className="gate-ticket">
           {bannerError ? (
             <p
               role="alert"
@@ -67,9 +67,9 @@ export function Gate({
           <form
             onSubmit={onSubmit}
             noValidate
-            className="ticket rise p-6 sm:p-8"
+            className="ticket rise"
           >
-            <div className="flex flex-col gap-5">
+            <div className="flex flex-col gap-3">
               <div>
                 <label htmlFor="name" className="eyebrow block">
                   Com et dius
@@ -124,17 +124,17 @@ export function Gate({
               </div>
             </div>
 
-            <hr className="perf my-6" />
+            <hr className="perf" />
 
             <button type="submit" className="btn-festa" disabled={busy}>
               {busy ? "Sortejant…" : "Tira la sort"}
             </button>
-            <p className="mt-4 text-center font-mono text-[0.7rem] leading-4 tracking-wider text-paper/45">
+            <p className="mt-3 text-center font-mono text-[0.7rem] leading-4 tracking-wider text-paper/45">
               Guardem el correu només per recordar quin país t&apos;ha tocat.
             </p>
           </form>
 
-          <p className="mt-4 text-center">
+          <p className="mt-2 text-center">
             <Link href="/com-funciona" className="btn-ghost">
               Com funciona · les normes
             </Link>
