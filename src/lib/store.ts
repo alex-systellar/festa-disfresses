@@ -189,32 +189,38 @@ async function writeFileStore(data: StoreData): Promise<void> {
 
 /* ------------------------------- blob driver ------------------------------ */
 
+/**
+ * Access mode of the Blob store. Private is the default and the right choice:
+ * this document holds every guest's name, email and IP, and a public blob has
+ * a guessable URL that needs no credentials at all. Only set this to "public"
+ * if the connected store was created as a public one — the API rejects a
+ * mismatch rather than silently downgrading.
+ */
+const BLOB_ACCESS = (process.env.BLOB_ACCESS === "public" ? "public" : "private") as
+  | "public"
+  | "private";
+
 async function readBlobStore(): Promise<Snapshot> {
-  const { head, BlobNotFoundError } = await import("@vercel/blob");
-  let meta;
-  try {
-    meta = await head(BLOB_PATHNAME);
-  } catch (err) {
-    // First run: the blob does not exist yet.
-    if (err instanceof BlobNotFoundError) return { data: emptyStore(), version: null };
-    throw err;
+  const { get } = await import("@vercel/blob");
+
+  // useCache:false reads straight from origin storage. Essential: a CDN-cached
+  // read would hand two guests the same stale country list.
+  const result = await get(BLOB_PATHNAME, { access: BLOB_ACCESS, useCache: false });
+  if (!result) return { data: emptyStore(), version: null };
+  if (result.statusCode === 304 || !result.stream) {
+    // Only reachable with a conditional request, which we never send.
+    return { data: emptyStore(), version: result.blob.etag };
   }
-  // The blob URL is stable (addRandomSuffix: false) and served from a CDN, so
-  // it must be cache-busted on every read or we would hand out stale countries.
-  const bust = encodeURIComponent(meta.uploadedAt.toISOString());
-  const res = await fetch(`${meta.downloadUrl}${meta.downloadUrl.includes("?") ? "&" : "?"}v=${bust}`, {
-    cache: "no-store",
-  });
-  if (res.status === 404) return { data: emptyStore(), version: null };
-  if (!res.ok) throw new Error(`Could not read assignments blob: ${res.status}`);
-  return { data: parse(await res.text()), version: meta.etag };
+
+  const raw = await new Response(result.stream).text();
+  return { data: parse(raw), version: result.blob.etag };
 }
 
 async function writeBlobStore(data: StoreData, expectedVersion: string | null): Promise<void> {
   const { put, BlobPreconditionFailedError } = await import("@vercel/blob");
   try {
     await put(BLOB_PATHNAME, JSON.stringify(data, null, 2), {
-      access: "public",
+      access: BLOB_ACCESS,
       contentType: "application/json",
       addRandomSuffix: false,
       cacheControlMaxAge: 0,
