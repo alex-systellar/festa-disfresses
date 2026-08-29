@@ -412,7 +412,7 @@ export const COUNTRIES: Country[] = [
     flagImage: "/flags/CD.svg",
     colors: ["#007FFF", "#F7D618"],
     anthem: { title: "Debout Congolais", source: "Debout Congolais.ogg" },
-    song: { search: "Independance Cha Cha Grand Kalle", match: "grand kalle" },
+    song: { search: "Bana Congo", match: "matchatcha" },
   },
   {
     code: "MN",
