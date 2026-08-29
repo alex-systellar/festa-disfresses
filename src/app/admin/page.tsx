@@ -55,6 +55,14 @@ type Status = "idle" | "loading" | "ready" | "unauthorized" | "error";
 
 type SortBy = "date" | "name";
 
+/** The destructive action waiting on the confirm dialog. */
+type PendingDelete =
+  | { kind: "one"; email: string; name: string; country: string }
+  | { kind: "all"; count: number };
+
+/** Typed out in full before the whole party can be wiped. */
+const CONFIRM_WORD = "ESBORRA";
+
 type LoadResult =
   | { kind: "ok"; data: AdminData }
   | { kind: "unauthorized" }
@@ -223,6 +231,108 @@ function Stat({
   );
 }
 
+/**
+ * Confirm step for the two destructive actions.
+ *
+ * Deliberately not `window.confirm`: it has to name exactly what is about to
+ * be destroyed, and the whole-party wipe asks for the word to be typed. None
+ * of this is recoverable — there is one JSON document and no backups — so the
+ * friction is the point.
+ */
+function ConfirmDelete({
+  pending,
+  busy,
+  error,
+  onCancel,
+  onConfirm,
+}: {
+  pending: PendingDelete;
+  busy: boolean;
+  error: string | null;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  const [typed, setTyped] = useState("");
+  const isAll = pending.kind === "all";
+  const ready = !isAll || typed.trim().toUpperCase() === CONFIRM_WORD;
+
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && !busy) onCancel();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [busy, onCancel]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="confirm-title"
+    >
+      <div className="w-full max-w-md rounded-xl border border-white/15 bg-neutral-900 p-5 shadow-2xl">
+        <h2 id="confirm-title" className="text-base font-semibold text-white">
+          {isAll ? "Esborrar totes les assignacions" : "Esborrar aquesta assignació"}
+        </h2>
+
+        {isAll ? (
+          <div className="mt-2 space-y-2 text-sm text-white/60">
+            <p>
+              Això esborrarà <strong className="text-white">{pending.count}</strong>{" "}
+              {pending.count === 1 ? "assignació" : "assignacions"}. Tots els països tornen al
+              pool i cap convidat conservarà el seu.
+            </p>
+            <p className="text-red-300/80">No es pot desfer.</p>
+            <label className="block pt-1 text-xs uppercase tracking-widest text-white/40">
+              Escriu {CONFIRM_WORD} per confirmar
+            </label>
+            <input
+              autoFocus
+              value={typed}
+              onChange={(event) => setTyped(event.target.value)}
+              className="w-full rounded-lg border border-white/15 bg-white/[0.04] px-3 py-2 font-mono text-sm outline-none transition focus:border-red-400/60"
+            />
+          </div>
+        ) : (
+          <p className="mt-2 text-sm text-white/60">
+            <strong className="text-white">{pending.name}</strong>{" "}
+            <span className="font-mono text-xs text-white/40">({pending.email})</span> té{" "}
+            <strong className="text-white">{pending.country}</strong>. Si l&apos;esborres, el país
+            torna al pool i pot tocar a algú altre.
+          </p>
+        )}
+
+        {error ? (
+          <p className="mt-3 rounded-lg border border-red-400/30 bg-red-400/10 px-3 py-2 text-sm text-red-200">
+            {error}
+          </p>
+        ) : null}
+
+        <div className="mt-4 flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={busy}
+            autoFocus={!isAll}
+            className="rounded-md border border-white/15 px-3 py-1.5 text-sm text-white/70 transition hover:border-white/30 hover:bg-white/5 disabled:opacity-40"
+          >
+            Cancel·la
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            disabled={busy || !ready}
+            className="rounded-md bg-red-500/90 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {busy ? "Esborrant…" : isAll ? `Esborra ${pending.count}` : "Esborra"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ---------------------------------- page ---------------------------------- */
 
 export default function AdminPage() {
@@ -238,8 +348,17 @@ export default function AdminPage() {
   const [now, setNow] = useState(() => Date.now());
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [lastLoadedAt, setLastLoadedAt] = useState<number | null>(null);
+  /** Which destructive action the dialog is asking about. null = closed. */
+  const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const bootstrapped = useRef(false);
+
+  const cancelDelete = useCallback(() => {
+    setPendingDelete(null);
+    setDeleteError(null);
+  }, []);
 
   const apply = useCallback((key: string, result: LoadResult) => {
     if (result.kind === "ok") {
@@ -295,10 +414,12 @@ export default function AdminPage() {
   }, []);
 
   useEffect(() => {
-    if (!autoRefresh || !activeKey || status === "unauthorized") return;
+    // Frozen while a confirm dialog is open: the count being confirmed must
+    // not change between reading it and pressing the button.
+    if (!autoRefresh || !activeKey || status === "unauthorized" || pendingDelete) return;
     const id = window.setInterval(() => void load(activeKey), 30_000);
     return () => window.clearInterval(id);
-  }, [autoRefresh, activeKey, status, load]);
+  }, [autoRefresh, activeKey, status, load, pendingDelete]);
 
   useEffect(() => {
     if (copied === "idle") return;
@@ -379,6 +500,39 @@ export default function AdminPage() {
     setCopied(ok ? "ok" : "fail");
   }
 
+  async function runDelete() {
+    if (!pendingDelete || !activeKey) return;
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      const res = await fetch("/api/admin", {
+        method: "DELETE",
+        // The key travels in a header, not the query string, so a destructive
+        // call never lands in browser history or an access log.
+        headers: { "content-type": "application/json", "x-admin-key": activeKey },
+        body: JSON.stringify(
+          pendingDelete.kind === "all" ? { all: true } : { email: pendingDelete.email },
+        ),
+      });
+      if (!res.ok) {
+        setDeleteError(
+          res.status === 401
+            ? "La clau ja no és vàlida. Torna a entrar."
+            : res.status === 404
+              ? "Aquesta assignació ja no hi era. Actualitza la vista."
+              : `El servidor ha respost ${res.status}.`,
+        );
+        return;
+      }
+      setPendingDelete(null);
+      await load(activeKey);
+    } catch {
+      setDeleteError("No s'ha pogut contactar amb el servidor.");
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   /* ------------------------------- gate screen ------------------------------ */
 
   if (!data) {
@@ -437,8 +591,6 @@ export default function AdminPage() {
 
   /* -------------------------------- dashboard ------------------------------- */
 
-  const isEphemeral = data.driver === "file";
-
   return (
     <main className="min-h-dvh bg-neutral-950 text-neutral-100">
       <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
@@ -470,6 +622,17 @@ export default function AdminPage() {
             <button
               type="button"
               onClick={() => {
+                setDeleteError(null);
+                setPendingDelete({ kind: "all", count: data.assignments.length });
+              }}
+              disabled={data.assignments.length === 0}
+              className="rounded-md border border-red-400/30 px-2.5 py-1.5 text-xs text-red-300/80 transition hover:border-red-400/60 hover:bg-red-400/10 hover:text-red-200 disabled:cursor-not-allowed disabled:opacity-30"
+            >
+              Esborra-ho tot
+            </button>
+            <button
+              type="button"
+              onClick={() => {
                 setActiveKey(null);
                 setData(null);
                 setKeyInput("");
@@ -481,17 +644,6 @@ export default function AdminPage() {
             </button>
           </div>
         </header>
-
-        {isEphemeral ? (
-          <div className="mt-4 rounded-lg border border-amber-400/40 bg-amber-400/10 px-3 py-2.5 text-sm text-amber-100">
-            <strong className="font-semibold">Emmagatzematge efímer.</strong> El driver actiu és{" "}
-            <code className="font-mono">file</code> (<code className="font-mono">data/assignments.json</code>).
-            En local és correcte; a Vercel vol dir que{" "}
-            <strong>les assignacions es perdran</strong> en cada desplegament o reinici de la funció.
-            Enllaça un Blob store al projecte perquè s&apos;injecti{" "}
-            <code className="font-mono">BLOB_READ_WRITE_TOKEN</code>.
-          </div>
-        ) : null}
 
         {status === "error" && errorMessage ? (
           <div className="mt-4 rounded-lg border border-red-400/30 bg-red-400/10 px-3 py-2 text-sm text-red-200">
@@ -531,8 +683,7 @@ export default function AdminPage() {
           <Stat
             label="Driver"
             value={data.driver}
-            hint={isEphemeral ? "efímer!" : "Vercel Blob"}
-            tone={isEphemeral ? "warn" : "good"}
+            hint={data.driver === "file" ? "disc local" : "Vercel Blob"}
           />
         </section>
 
@@ -670,12 +821,15 @@ export default function AdminPage() {
                   <th className="px-3 py-2 font-medium">Dispositiu</th>
                   <th className="px-3 py-2 font-medium">IP</th>
                   <th className="px-3 py-2 font-medium">Assignat</th>
+                  <th className="px-3 py-2 font-medium">
+                    <span className="sr-only">Accions</span>
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {assignments.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-3 py-6 text-center text-white/40">
+                    <td colSpan={7} className="px-3 py-6 text-center text-white/40">
                       {data.assignments.length === 0
                         ? "Encara no hi ha cap assignació."
                         : "Cap resultat per aquest filtre."}
@@ -751,6 +905,24 @@ export default function AdminPage() {
                           </span>
                           <div className="text-[11px] text-white/30">{absoluteTime(a.assignedAt)}</div>
                         </td>
+                        <td className="px-3 py-1.5 text-right">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setDeleteError(null);
+                              setPendingDelete({
+                                kind: "one",
+                                email: a.email,
+                                name: a.name || a.email,
+                                country: a.country,
+                              });
+                            }}
+                            title={`Esborra l'assignació de ${a.name || a.email}`}
+                            className="rounded-md border border-white/10 px-2 py-1 text-[11px] text-white/45 transition hover:border-red-400/50 hover:bg-red-400/10 hover:text-red-200"
+                          >
+                            Esborra
+                          </button>
+                        </td>
                       </tr>
                     );
                   })
@@ -807,6 +979,16 @@ export default function AdminPage() {
           )}
         </section>
       </div>
+
+      {pendingDelete ? (
+        <ConfirmDelete
+          pending={pendingDelete}
+          busy={deleting}
+          error={deleteError}
+          onCancel={cancelDelete}
+          onConfirm={() => void runDelete()}
+        />
+      ) : null}
     </main>
   );
 }

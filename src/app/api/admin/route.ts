@@ -1,6 +1,7 @@
 import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { COUNTRIES, getCountry } from "@/data/countries";
+import { clearAssignments, isValidEmail, removeAssignment } from "@/lib/assign";
 import { activeDriver, readStore } from "@/lib/store";
 
 export const runtime = "nodejs";
@@ -9,7 +10,11 @@ export const dynamic = "force-dynamic";
 function authorized(request: Request): boolean {
   const expected = process.env.ADMIN_KEY;
   if (!expected) return false; // No key configured => admin stays closed.
-  const provided = new URL(request.url).searchParams.get("key") ?? "";
+  // Header first. A destructive call should not have to carry the key in the
+  // query string, where it lands in browser history and server access logs;
+  // GET keeps accepting ?key= so an ops bookmark still works.
+  const provided =
+    request.headers.get("x-admin-key") ?? new URL(request.url).searchParams.get("key") ?? "";
   const a = Buffer.from(provided);
   const b = Buffer.from(expected);
   return a.length === b.length && timingSafeEqual(a, b);
@@ -88,4 +93,48 @@ export async function GET(request: Request) {
     },
     { headers: { "cache-control": "no-store" } },
   );
+}
+
+/**
+ * Ops deletion: one guest, or the whole party.
+ *
+ * There is no ambient credential anywhere in this app — the key lives in React
+ * state and is attached explicitly per request — so a cross-site caller has
+ * nothing to ride on and this needs no CSRF token of its own.
+ */
+export async function DELETE(request: Request) {
+  if (!authorized(request)) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
+
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "invalid_body" }, { status: 400 });
+  }
+
+  const { email, all } = (body ?? {}) as { email?: unknown; all?: unknown };
+
+  try {
+    // Wiping everything is spelled out explicitly, so a malformed body can
+    // never be mistaken for "delete the lot".
+    if (all === true) {
+      const removed = await clearAssignments();
+      return NextResponse.json({ removed }, { headers: { "cache-control": "no-store" } });
+    }
+
+    if (typeof email !== "string" || !isValidEmail(email)) {
+      return NextResponse.json({ error: "invalid_email" }, { status: 400 });
+    }
+
+    const deleted = await removeAssignment(email);
+    if (!deleted) {
+      return NextResponse.json({ error: "not_found" }, { status: 404 });
+    }
+    return NextResponse.json({ removed: 1 }, { headers: { "cache-control": "no-store" } });
+  } catch (err) {
+    console.error("[admin] delete failed", err);
+    return NextResponse.json({ error: "storage_unavailable" }, { status: 500 });
+  }
 }

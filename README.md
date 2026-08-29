@@ -38,6 +38,7 @@ countries and nobody has to coordinate anything.
 | `/api/reroll`         | POST   | `{ email }`         | Spends the one reroll. `200` with the same shape as claim, `409 reroll_used`, `404 not_found`, `400 invalid_email`. |
 | `/api/lookup?email=…` | GET    | —                   | Reads an existing assignment, never creates one. `404 not_found`.   |
 | `/api/admin?key=…`    | GET    | —                   | Full dump for the dashboard, gated by `ADMIN_KEY`. `401 unauthorized`. |
+| `/api/admin`          | DELETE | `{ email }` or `{ all: true }` | Removes one assignment, or every one. Key goes in the `x-admin-key` header. `401 unauthorized`, `400 invalid_email`, `404 not_found`. |
 
 ### The email is an identity, not a verified address
 
@@ -203,8 +204,7 @@ silently lock out a couple sharing a laptop.
 `/admin` is a dense client-side ops view, in Catalan:
 
 - stats: assigned / total, remaining countries, rerolls spent, **emails caught
-  in a same-device collision**, duplicates, and the **live storage driver**
-  (with a warning banner when it is `file`);
+  in a same-device collision**, duplicates, and the live storage driver;
 - a **possibles duplicats** panel (only when there is something to show) listing
   each colliding group of emails — same-browser groups first and in red, same-IP
   groups after and in amber; click any email to filter the table to it;
@@ -226,7 +226,14 @@ silently lock out a couple sharing a laptop.
   in-page with no extra dependency. The collision columns are semicolon-joined
   email lists, and the emoji flag appears here and only here; the table itself
   renders the SVGs;
-- auto-refresh every 30 seconds, plus a manual refresh.
+- **deleting**: an `Esborra` button on every row, and `Esborra-ho tot` in the
+  header. Both go through a confirm dialog that names what is about to go; the
+  whole-party wipe additionally requires typing `ESBORRA`, because there is one
+  JSON document and no backups. Deleting a guest hands their country straight
+  back to the pool;
+- auto-refresh every 30 seconds, plus a manual refresh. It pauses while a
+  confirm dialog is open, so the count you are agreeing to cannot change
+  between reading it and pressing the button.
 
 Set the key first:
 
