@@ -2,6 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 
+import { getCountry } from "@/data/countries";
+import { getSong } from "@/data/songs";
+
 /* ---------------------------------- types --------------------------------- */
 
 type RemainingCountry = {
@@ -230,7 +233,7 @@ async function copyText(text: string): Promise<boolean> {
 /* ------------------------------- small pieces ------------------------------ */
 
 /**
- * Every flag is a local 4:3 SVG from the same set, so all 40 look like
+ * Every flag is a local 4:3 SVG from the same set, so all 41 look like
  * siblings on every platform. Emoji flags are deliberately not rendered:
  * they are drawn by the platform font and Catalonia has none at all.
  */
@@ -244,6 +247,100 @@ function Flag({ src, alt }: { src: string; alt: string }) {
       height={18}
       className="inline-block h-4 w-[1.333rem] shrink-0 rounded-[2px] object-cover align-[-3px] ring-1 ring-white/15"
     />
+  );
+}
+
+/**
+ * Only one clip at a time: the previous button's stopper is parked here so
+ * starting a second preview silences the first. Module scope rather than
+ * context because this is the whole of the shared state.
+ */
+let stopPlayingPreview: (() => void) | null = null;
+
+/**
+ * Hover-to-reveal preview, on every country in both lists so the whole pool
+ * can be auditioned before the party — including countries already handed out.
+ *
+ * Plays the same source the guest gets: the song where there is one, streamed
+ * from Apple, and the committed anthem mp3 otherwise. Renders nothing for a
+ * country with neither.
+ */
+function SongPreview({ code, label }: { code: string; label: string }) {
+  const [playing, setPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const song = getSong(code);
+  const src = song?.previewUrl ?? (getCountry(code)?.anthem.source ? `/anthems/${code}.mp3` : null);
+
+  const stop = useCallback(() => {
+    audioRef.current?.pause();
+    setPlaying(false);
+  }, []);
+
+  // Quieter than the reveal: this one plays in a room, not at a party.
+  useEffect(() => {
+    if (audioRef.current) audioRef.current.volume = 0.6;
+  }, []);
+
+  // Leaving the page mid-preview must not keep the audio alive.
+  useEffect(() => {
+    return () => {
+      if (stopPlayingPreview === stop) stopPlayingPreview = null;
+    };
+  }, [stop]);
+
+  const toggle = useCallback(() => {
+    const el = audioRef.current;
+    if (!el) return;
+    if (!el.paused) {
+      el.pause();
+      stopPlayingPreview = null;
+      return;
+    }
+    stopPlayingPreview?.();
+    stopPlayingPreview = stop;
+    void el.play().catch(() => setPlaying(false));
+  }, [stop]);
+
+  if (!src) return null;
+
+  const what = song ? `${song.title} — ${song.artist}` : `himne de ${label}`;
+
+  return (
+    <>
+      {/* `preload="none"`: 41 of these on one page must not pull 41 MB. */}
+      <audio
+        ref={audioRef}
+        src={src}
+        preload="none"
+        onPlay={() => setPlaying(true)}
+        onPause={() => setPlaying(false)}
+        onEnded={() => setPlaying(false)}
+        onError={() => setPlaying(false)}
+      />
+      <button
+        type="button"
+        onClick={toggle}
+        title={what}
+        aria-label={playing ? `Atura ${what}` : `Escolta ${what}`}
+        // Hidden until the row is hovered or the button focused, but always
+        // visible while playing — otherwise the only stop control disappears
+        // the moment the pointer moves away.
+        className={`inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition focus-visible:opacity-100 focus-visible:outline-1 focus-visible:outline-offset-1 focus-visible:outline-white/40 ${
+          playing
+            ? "border-emerald-400/50 bg-emerald-400/15 text-emerald-300 opacity-100"
+            : "border-white/20 bg-white/5 text-white/60 opacity-0 hover:border-white/40 hover:text-white group-hover:opacity-100"
+        }`}
+      >
+        <svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor" aria-hidden="true" className="block">
+          {playing ? (
+            <path d="M8.5 5h2.6v14H8.5zM12.9 5h2.6v14h-2.6z" />
+          ) : (
+            <path d="M9 5.4v13.2a.6.6 0 0 0 .92.5l10.3-6.6a.6.6 0 0 0 0-1L9.92 4.9a.6.6 0 0 0-.92.5z" />
+          )}
+        </svg>
+      </button>
+    </>
   );
 }
 
@@ -903,7 +1000,7 @@ export default function AdminPage() {
                     return (
                       <tr
                         key={`${a.email}-${a.assignedAt}`}
-                        className="border-t border-white/[0.07] align-top hover:bg-white/[0.03]"
+                        className="group border-t border-white/[0.07] align-top hover:bg-white/[0.03]"
                       >
                         <td className="px-3 py-1.5 font-medium text-white">{a.name || "—"}</td>
                         <td className="whitespace-nowrap px-3 py-1.5">
@@ -912,6 +1009,9 @@ export default function AdminPage() {
                           </span>
                           <span>{a.country}</span>
                           <span className="ml-1.5 font-mono text-[11px] text-white/30">{a.code}</span>
+                          <span className="ml-1.5 align-[-4px]">
+                            <SongPreview code={a.code} label={a.country} />
+                          </span>
                           {a.rerolled ? (
                             <span
                               className="ml-2 rounded border border-sky-400/40 bg-sky-400/10 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-sky-300"
@@ -1080,10 +1180,11 @@ export default function AdminPage() {
               {remaining.map((c) => (
                 <li
                   key={c.code}
-                  className="flex items-center gap-2 rounded-md border border-white/10 bg-white/[0.02] px-2.5 py-1.5 text-sm"
+                  className="group flex items-center gap-2 rounded-md border border-white/10 bg-white/[0.02] px-2.5 py-1.5 text-sm"
                 >
                   <Flag src={c.flagImage} alt={c.name} />
                   <span className="truncate">{c.name}</span>
+                  <SongPreview code={c.code} label={c.name} />
                   <span className="ml-auto font-mono text-[11px] text-white/30">{c.code}</span>
                 </li>
               ))}

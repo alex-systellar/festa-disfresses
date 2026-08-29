@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { getSong } from "@/data/songs";
+
 const DEFAULT_VOLUME = 0.5;
 
 /**
@@ -30,9 +32,9 @@ function TransportIcon({ playing }: { playing: boolean }) {
   );
 }
 
-type AnthemPlayerProps = {
+type CountryPlayerProps = {
   code: string;
-  title: string;
+  anthemTitle: string;
   /**
    * False for the few anthems with no freely-licensed recording. Not a failure:
    * the title still shows, the control just isn't there.
@@ -44,14 +46,28 @@ type AnthemPlayerProps = {
 
 /**
  * One control, not two. A play/pause button already covers "make it stop", so a
- * separate mute toggle only added a second, contradictory way to silence the
- * anthem. Every failure path is silent: a missing file downgrades to a note and
- * a blocked autoplay downgrades to a paused button the guest can press.
+ * separate mute toggle only added a second, contradictory way to silence it.
+ *
+ * Plays the country's song where there is one, streamed from Apple's CDN, and
+ * falls back to the committed anthem mp3 — which is local, so a dead venue
+ * wifi downgrades the guest to the anthem rather than to silence. Every other
+ * failure path is silent too: a missing file downgrades to a note and a
+ * blocked autoplay downgrades to a paused button the guest can press.
  */
-export function AnthemPlayer({ code, title, hasRecording, autoplay }: AnthemPlayerProps) {
+export function CountryPlayer({ code, anthemTitle, hasRecording, autoplay }: CountryPlayerProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
+  const song = getSong(code);
   const [available, setAvailable] = useState(true);
   const [playing, setPlaying] = useState(false);
+  /**
+   * Flipped when the preview will not load, so the anthem takes over. Reset on
+   * a reroll by the `key` at the usage site, not by an effect — remounting is
+   * how React wants per-item state cleared.
+   */
+  const [songFailed, setSongFailed] = useState(false);
+
+  const usingSong = Boolean(song) && !songFailed;
+  const src = usingSong ? song!.previewUrl : hasRecording ? `/anthems/${code}.mp3` : null;
 
   useEffect(() => {
     const el = audioRef.current;
@@ -65,7 +81,7 @@ export function AnthemPlayer({ code, title, hasRecording, autoplay }: AnthemPlay
     }
 
     return () => el.pause();
-  }, [autoplay, code, hasRecording]);
+  }, [autoplay, code, src]);
 
   const toggle = useCallback(() => {
     const el = audioRef.current;
@@ -74,47 +90,46 @@ export function AnthemPlayer({ code, title, hasRecording, autoplay }: AnthemPlay
     else el.pause();
   }, []);
 
-  const label = title;
+  /**
+   * The preview is the thing most likely to fail — it is the only source that
+   * needs the network. Falling back to the anthem re-renders with a new `src`,
+   * and the effect above picks up autoplay again from there.
+   */
+  const handleError = useCallback(() => {
+    if (usingSong) {
+      setSongFailed(true);
+      return;
+    }
+    setAvailable(false);
+    setPlaying(false);
+  }, [usingSong]);
 
-  // No recording exists for this anthem — show the title and nothing else.
-  if (!hasRecording) {
+  // Nothing to play at all: show the anthem title and nothing else.
+  if (!src || !available) {
     return (
       <div>
-        <p className="eyebrow">Himne nacional</p>
-        <p className="mt-1 text-lg leading-tight text-paper">{label}</p>
+        <p className={`eyebrow${available ? "" : " opacity-70"}`}>Himne nacional</p>
+        <p className="mt-1 text-lg leading-tight text-paper">{anthemTitle}</p>
         <p className="mt-2 font-mono text-[0.7rem] tracking-wider text-paper/40">
-          Sense enregistrament lliure
+          {available ? "Sense enregistrament lliure" : "Himne no disponible"}
         </p>
       </div>
     );
   }
 
-  if (!available) {
-    return (
-      <div>
-        <p className="eyebrow opacity-70">Himne nacional</p>
-        <p className="mt-1 text-lg leading-tight text-paper">{label}</p>
-        <p className="mt-2 font-mono text-[0.7rem] tracking-wider text-paper/40">
-          Himne no disponible
-        </p>
-      </div>
-    );
-  }
+  const label = usingSong ? `${song!.title} — ${song!.artist}` : anthemTitle;
 
   return (
     <div className="flex items-center gap-4">
       <audio
         ref={audioRef}
-        src={`/anthems/${code}.mp3`}
+        src={src}
         preload="auto"
         loop
         onPlay={() => setPlaying(true)}
         onPause={() => setPlaying(false)}
         onEnded={() => setPlaying(false)}
-        onError={() => {
-          setAvailable(false);
-          setPlaying(false);
-        }}
+        onError={handleError}
       />
 
       <button
@@ -130,8 +145,24 @@ export function AnthemPlayer({ code, title, hasRecording, autoplay }: AnthemPlay
       </button>
 
       <div className="min-w-0 flex-1">
-        <p className="eyebrow">Himne nacional</p>
-        <p className="text-lg leading-tight text-balance text-paper">{label}</p>
+        <p className="eyebrow">{usingSong ? "La cançó" : "Himne nacional"}</p>
+        <p className="text-lg leading-tight text-balance text-paper">
+          {usingSong ? song!.title : anthemTitle}
+        </p>
+        {usingSong ? (
+          <p className="mt-0.5 truncate text-sm text-paper/60">
+            {song!.artist} ·{" "}
+            {/* Apple's preview terms want the clip pointing back at the store. */}
+            <a
+              href={song!.trackUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="underline decoration-paper/30 underline-offset-2 transition hover:text-turquesa"
+            >
+              Apple Music
+            </a>
+          </p>
+        ) : null}
       </div>
     </div>
   );

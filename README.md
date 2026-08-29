@@ -11,7 +11,7 @@ countries and nobody has to coordinate anything.
 
 - Guest view: `/`
 - Ops dashboard: `/admin` (Catalan, gated by `ADMIN_KEY`)
-- Countries: `src/data/countries.ts` (40 entries)
+- Countries: `src/data/countries.ts` (41 entries)
 
 ---
 
@@ -39,7 +39,7 @@ countries and nobody has to coordinate anything.
    first country goes straight back into the pool for someone else; the second
    one is final. Only ever **one** country is persisted per guest.
 5. **Coming back** from any device with the same email returns the same country.
-6. If more than 40 people show up the pool runs dry. Rather than failing, the
+6. If more than 41 people show up the pool runs dry. Rather than failing, the
    app hands out a repeat and flags the assignment as `duplicate: true`, which
    the admin dashboard surfaces so you know it happened.
 
@@ -331,7 +331,7 @@ Everything about a country lives in `src/data/countries.ts`:
 ### Flags are SVGs, never emoji
 
 Every country renders from a local 4:3 SVG at `public/flags/<CODE>.svg`, pointed
-at by `flagImage` — which is **always set**, for all 40 countries. Render it
+at by `flagImage` — which is **always set**, for all 41 countries. Render it
 unconditionally:
 
 ```tsx

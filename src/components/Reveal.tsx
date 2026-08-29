@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { CSSProperties } from "react";
-import { AnthemPlayer } from "@/components/AnthemPlayer";
+import { CountryPlayer } from "@/components/CountryPlayer";
 import { Flag } from "@/components/Flag";
 import type { ClaimResult } from "@/components/PartyApp";
 
@@ -104,9 +104,10 @@ export function Reveal({
         </div>
 
         <div className="anthem-stub">
-          <AnthemPlayer
+          <CountryPlayer
+            key={country.code}
             code={country.code}
-            title={country.anthem.title}
+            anthemTitle={country.anthem.title}
             hasRecording={Boolean(country.anthem.source)}
             autoplay={!calm}
           />

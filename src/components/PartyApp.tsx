@@ -6,6 +6,7 @@ import type { Country } from "@/data/countries";
 import { Farewell } from "@/components/Farewell";
 import { Gate } from "@/components/Gate";
 import { Reveal } from "@/components/Reveal";
+import { getSong } from "@/data/songs";
 import { Rsvp, type RsvpAnswer } from "@/components/Rsvp";
 import { SlotReel } from "@/components/SlotReel";
 
@@ -161,6 +162,23 @@ export function PartyApp() {
 
   /** Mirrors `pending` so the reel's land callback can read it without a re-render. */
   const pendingRef = useRef<ClaimResult | null>(null);
+
+  /**
+   * The song preview is streamed from Apple's CDN, so it is the one asset that
+   * can be slow at exactly the wrong moment. The reel spins for a beat between
+   * the claim landing and the reveal, which is enough to pull the ~1 MB clip
+   * into the HTTP cache — by the time <audio> asks for it, it is local.
+   *
+   * Best effort on purpose: a failure here costs nothing, because the player
+   * falls back to the committed anthem mp3 either way.
+   */
+  useEffect(() => {
+    const url = pending ? getSong(pending.country.code)?.previewUrl : undefined;
+    if (!url) return;
+    const abort = new AbortController();
+    void fetch(url, { signal: abort.signal }).catch(() => {});
+    return () => abort.abort();
+  }, [pending]);
 
   /** Everything the gate is allowed to complain about, in one place. */
   const showGateError = useCallback((code: string | null) => {
