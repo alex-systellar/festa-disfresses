@@ -7,11 +7,11 @@
     "artwork": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/74/ab/ff/74abffd2-ab5b-6fcd-114d-beec6cf5876d/cover.jpg/100x100bb.jpg"
   },
   "US": {
-    "title": "Fortunate Son",
-    "artist": "Creedence Clearwater Revival",
-    "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/67/c7/56/67c7568e-3bca-4c8a-9efd-801faae2bd2c/mzaf_3192164342694681383.plus.aac.p.m4a",
-    "trackUrl": "https://music.apple.com/us/album/fortunate-son/1440955595?i=1440956152&uo=4",
-    "artwork": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/a1/47/ba/a147ba91-31cd-ef4d-d785-040036d14598/12CMGIM34362.rgb.jpg/100x100bb.jpg"
+    "title": "Take Me Home, Country Roads (Original Version)",
+    "artist": "John Denver",
+    "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/3a/d4/ed/3ad4ed7c-c395-fb5b-cb9e-09da11308881/mzaf_9789459917359346736.plus.aac.p.m4a",
+    "trackUrl": "https://music.apple.com/us/album/take-me-home-country-roads-original-version/1617388064?i=1617388079&uo=4",
+    "artwork": "https://is1-ssl.mzstatic.com/image/thumb/Music122/v4/c6/c7/6f/c6c76f73-fcc7-93f7-ced1-2a74c9bdeead/196589072375.jpg/100x100bb.jpg"
   },
   "DE": {
     "title": "Erika",
@@ -84,11 +84,11 @@
     "artwork": "https://is1-ssl.mzstatic.com/image/thumb/Music/bb/67/32/mzi.qrngyzci.jpg/100x100bb.jpg"
   },
   "RU": {
-    "title": "National Anthem of the USSR",
+    "title": "Soviet National Anthem (Hymne National de L'Urss)",
     "artist": "Alexandrov Ensemble",
-    "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/c3/4d/2a/c34d2a87-b39f-5b00-1acc-ab572b8bc7d3/mzaf_7233306678737497401.plus.aac.p.m4a",
-    "trackUrl": "https://music.apple.com/us/album/national-anthem-of-the-ussr/1833150398?i=1833150838&uo=4",
-    "artwork": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/e6/6c/d1/e66cd1ae-5f4f-8def-6544-5d2ef3b0bd33/698.jpg/100x100bb.jpg"
+    "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/79/c9/34/79c9342e-5c58-5042-1525-50a5e267d369/mzaf_10584448305169865974.plus.aac.p.m4a",
+    "trackUrl": "https://music.apple.com/us/album/soviet-national-anthem-hymne-national-de-lurss/216247785?i=216248343&uo=4",
+    "artwork": "https://is1-ssl.mzstatic.com/image/thumb/Music/a0/c9/77/mzi.ylnpqmgy.tif/100x100bb.jpg"
   },
   "CA": {
     "title": "Let's Go to the Mall (From \"How I Met Your Mother: Season 2\")",

@@ -78,7 +78,7 @@ export const COUNTRIES: Country[] = [
     flagImage: "/flags/US.svg",
     colors: ["#B22234", "#3C3B6E"],
     anthem: { title: "The Star-Spangled Banner", source: "Star Spangled Banner instrumental.ogg" },
-    song: { search: "Fortunate Son Creedence Clearwater Revival", match: "fortunate son — creedence" },
+    song: { search: "Take Me Home Country Roads John Denver", match: "original version" },
   },
   {
     code: "DE",
@@ -177,7 +177,7 @@ export const COUNTRIES: Country[] = [
     flagImage: "/flags/RU.svg",
     colors: ["#0039A6", "#D52B1E"],
     anthem: { title: "Himne de la Federació Russa", source: "Russian Anthem chorus.ogg" },
-    song: { search: "Soviet Union State Anthem USSR", match: "national anthem of the ussr" },
+    song: { search: "Hymne National de LUrss Alexandrov Ensemble", match: "soviet national anthem" },
   },
   {
     code: "CA",
@@ -240,7 +240,7 @@ export const COUNTRIES: Country[] = [
     flagImage: "/flags/GR.svg",
     colors: ["#0D5EAF", "#FFFFFF"],
     anthem: { title: "Hymn to Liberty", source: "Hymn to liberty instrumental.oga" },
-    song: { search: "Zorba the Greek Sirtaki Theodorakis", match: "theodorakis", start: 10 },
+    song: { search: "Zorba the Greek Sirtaki Theodorakis", match: "theodorakis", start: 20 },
   },
   {
     code: "EG",
