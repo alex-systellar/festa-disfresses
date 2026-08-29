@@ -60,7 +60,7 @@ export const COUNTRIES: Country[] = [
     flagImage: "/flags/BR.svg",
     colors: ["#009B3A", "#FFDF00"],
     anthem: { title: "Hino Nacional Brasileiro", source: "Hino-Nacional-Brasil-instrumental-mec.ogg" },
-    song: { search: "Ai Se Eu Te Pego Michel Telo", match: "michel teló" },
+    song: { search: "Samba do Brasil Bellini", match: "samba do brasil — bellini" },
   },
   {
     code: "US",
@@ -69,6 +69,7 @@ export const COUNTRIES: Country[] = [
     flagImage: "/flags/US.svg",
     colors: ["#B22234", "#3C3B6E"],
     anthem: { title: "The Star-Spangled Banner", source: "Star Spangled Banner instrumental.ogg" },
+    song: { search: "Fortunate Son Creedence Clearwater Revival", match: "fortunate son — creedence" },
   },
   {
     code: "DE",
@@ -104,7 +105,7 @@ export const COUNTRIES: Country[] = [
     flagImage: "/flags/JP.svg",
     colors: ["#BC002D", "#FFFFFF"],
     anthem: { title: "Kimigayo", source: "Kimi ga Yo instrumental.ogg" },
-    song: { search: "PPAP Pen-Pineapple-Apple-Pen Pikotaro", match: "ppap" },
+    song: { search: "Renai Circulation Kana Hanazawa", match: "monogatari" },
   },
   {
     code: "FR",
@@ -113,6 +114,7 @@ export const COUNTRIES: Country[] = [
     flagImage: "/flags/FR.svg",
     colors: ["#0055A4", "#EF4135"],
     anthem: { title: "La Marseillaise", source: "La Marseillaise.ogg" },
+    song: { search: "Alexandrie Alexandra Claude Francois", match: "alexandrie alexandra — claude" },
   },
   {
     code: "IT",
@@ -157,7 +159,7 @@ export const COUNTRIES: Country[] = [
     flagImage: "/flags/CN.svg",
     colors: ["#DE2910", "#FFDE00"],
     anthem: { title: "March of the Volunteers", source: "March of the Volunteers instrumental.ogg" },
-    song: { search: "Little Apple Chopstick Brothers", match: "chopsticks brothers" },
+    song: { search: "Yi Jian Mei Fei Yu-Ching", match: "xue hua piao piao" },
   },
   {
     code: "RU",
@@ -166,7 +168,7 @@ export const COUNTRIES: Country[] = [
     flagImage: "/flags/RU.svg",
     colors: ["#0039A6", "#D52B1E"],
     anthem: { title: "Himne de la Federació Russa", source: "Russian Anthem chorus.ogg" },
-    song: { search: "Trololo Eduard Khil", match: "вокализ" },
+    song: { search: "Soviet Union State Anthem USSR", match: "national anthem of the ussr" },
   },
   {
     code: "CA",
@@ -175,7 +177,7 @@ export const COUNTRIES: Country[] = [
     flagImage: "/flags/CA.svg",
     colors: ["#FF0000", "#FFFFFF"],
     anthem: { title: "O Canada", source: "United States Navy Band - O Canada.ogg" },
-    song: { search: "Call Me Maybe Carly Rae Jepsen", match: "call me maybe — carly" },
+    song: { search: "Let's Go to the Mall Robin Sparkles", match: "robin sparkles" },
   },
   {
     code: "AU",
@@ -238,7 +240,7 @@ export const COUNTRIES: Country[] = [
     flagImage: "/flags/EG.svg",
     colors: ["#CE1126", "#C09300"],
     anthem: { title: "Bilady, Bilady, Bilady", source: "Bilady, Bilady, Bilady.ogg" },
-    song: { search: "Nour El Ain Amr Diab", match: "amr diab" },
+    song: { search: "Enta Omri Umm Kulthum", match: "enta oumry" },
   },
   {
     code: "AR",
@@ -256,7 +258,7 @@ export const COUNTRIES: Country[] = [
     flagImage: "/flags/CU.svg",
     colors: ["#002A8F", "#CF142B"],
     anthem: { title: "La Bayamesa", source: "La Bayamesa (1945).ogg" },
-    song: { search: "Guantanamera Compay Segundo", match: "guantanamera — compay" },
+    song: { search: "El meu avi", match: "el meu avi — los manolos" },
   },
   {
     code: "CH",
@@ -310,7 +312,7 @@ export const COUNTRIES: Country[] = [
     flagImage: "/flags/PE.svg",
     colors: ["#D91023", "#FFFFFF"],
     anthem: { title: "Himno Nacional del Perú", source: "United States Navy Band - Marcha Nacional del Perú.ogg" },
-    song: { search: "El Condor Pasa Los Incas", match: "los incas" },
+    song: { search: "Wendy Sulca Mi Tetita", match: "la tetita — wendy" },
   },
   {
     code: "TH",
@@ -346,7 +348,6 @@ export const COUNTRIES: Country[] = [
     flagImage: "/flags/CT.svg",
     colors: ["#FCDD09", "#DA121A"],
     anthem: { title: "Els Segadors", source: "Els Segadors.ogg" },
-    song: { search: "Boig per tu Sau", match: "boig per tu — sau" },
   },
   {
     code: "EC",
@@ -373,7 +374,7 @@ export const COUNTRIES: Country[] = [
     flagImage: "/flags/VA.svg",
     colors: ["#FFE000", "#C9A227"],
     anthem: { title: "Inno e Marcia Pontificale", source: "United States Navy Band - Inno e Marcia Pontificale.ogg" },
-    song: { search: "Papaoutai Stromae", match: "papaoutai — stromae" },
+    song: { search: "Ave Maria Gregorian chant", match: "christ the king choir" },
   },
   {
     code: "AF",
@@ -391,7 +392,7 @@ export const COUNTRIES: Country[] = [
     flagImage: "/flags/IL.svg",
     colors: ["#0038B8", "#4A7EBB"],
     anthem: { title: "Hatikvah", source: "Hatikvah instrumental.ogg" },
-    song: { search: "Hava Nagila", match: "jewish starlight" },
+    song: { search: "Toy Netta", match: "toy — netta" },
   },
   {
     code: "CD",

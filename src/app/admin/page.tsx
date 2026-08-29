@@ -550,13 +550,13 @@ export default function AdminPage() {
     // ?key= wins: pasting a fresh link should override a stale stored key.
     const key = new URLSearchParams(window.location.search).get("key") ?? readStoredKey();
     if (!key) return;
-    let cancelled = false;
-    void fetchAdmin(key).then((result) => {
-      if (!cancelled) apply(key, result);
-    });
-    return () => {
-      cancelled = true;
-    };
+    // Deliberately not cancelled on unmount. React StrictMode runs effects
+    // twice in development: the first pass set the ref and started this fetch,
+    // its cleanup cancelled it, and the second pass hit the ref guard and
+    // never re-issued it — so the panel sat on the key form in dev with a
+    // perfectly good key in hand, while production worked fine. This is a
+    // one-shot bootstrap and its result is always worth applying.
+    void fetchAdmin(key).then((result) => apply(key, result));
   }, [apply]);
 
   // Keep the "fa X min" column honest without hammering the API.
