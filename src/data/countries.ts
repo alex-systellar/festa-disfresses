@@ -87,7 +87,7 @@ export const COUNTRIES: Country[] = [
     flagImage: "/flags/DE.svg",
     colors: ["#000000", "#DD0000"],
     anthem: { title: "Das Lied der Deutschen", source: "National anthem of Germany - U.S. Army 1st Armored Division Band.ogg" },
-    song: { search: "Wir singen und marschieren Soldatenlieder", match: "major hans friess" },
+    song: { search: "Wir singen und marschieren Soldatenlieder", match: "major hans friess", start: 20 },
   },
   {
     code: "AT",
