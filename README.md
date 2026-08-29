@@ -20,13 +20,26 @@ countries and nobody has to coordinate anything.
 1. **Name + email.** The email is normalised (trimmed + lowercased) and is the
    identity — there are no accounts, passwords or sessions. The name is purely
    for the host: it is what shows up in the admin dashboard.
-2. **A country is assigned** at random from the countries not yet taken, stored
+
+   Submitting runs `POST /api/precheck`, which applies **every** rule a claim
+   would — dead mail domain, a browser that already registered, a network over
+   its cap — and assigns nothing. Refusals therefore surface on the details
+   screen, next to the field that caused them, instead of after the guest has
+   answered the RSVP and watched the reel start.
+2. **"Hi seràs?"** Nothing is claimed until the guest says they are coming — a
+   country handed to a "no" is a country nobody at the party gets to wear. The
+   answer is **stored**, so a guest who declines and comes back later is not
+   asked again: they land straight on their own goodbye, with the option to
+   change their mind. A `maybe` or `no` lives in `guests[]`; a `yes` is written
+   by `claim` in the same transaction as the country, so the two can never
+   disagree.
+3. **A country is assigned** at random from the countries not yet taken, stored
    against the email, and removed from the pool.
-3. **One reroll.** If they hate what they got, they can reroll exactly once. The
+4. **One reroll.** If they hate what they got, they can reroll exactly once. The
    first country goes straight back into the pool for someone else; the second
    one is final. Only ever **one** country is persisted per guest.
-4. **Coming back** from any device with the same email returns the same country.
-5. If more than 40 people show up the pool runs dry. Rather than failing, the
+5. **Coming back** from any device with the same email returns the same country.
+6. If more than 40 people show up the pool runs dry. Rather than failing, the
    app hands out a repeat and flags the assignment as `duplicate: true`, which
    the admin dashboard surfaces so you know it happened.
 
@@ -36,7 +49,9 @@ countries and nobody has to coordinate anything.
 | --------------------- | ------ | ------------------- | ------------------------------------------------------------------ |
 | `/api/claim`          | POST   | `{ email, name }`   | Assigns (or returns) a country. `400 invalid_email`, `400 invalid_email_domain`, `400 invalid_name`, `429 ip_limit`, `500 storage_unavailable`. |
 | `/api/reroll`         | POST   | `{ email }`         | Spends the one reroll. `200` with the same shape as claim, `409 reroll_used`, `404 not_found`, `400 invalid_email`. |
-| `/api/lookup?email=…` | GET    | —                   | Reads an existing assignment, never creates one. `404 not_found`.   |
+| `/api/precheck`       | POST   | `{ email, name }`   | Every check `claim` makes, assigning nothing. Answers a `GuestState`. `400 invalid_email` / `invalid_email_domain` / `invalid_name`, `403 device_limit` / `ip_limit`. |
+| `/api/rsvp`           | POST   | `{ email, name, answer }` | Stores a `maybe` or a `no`. A `yes` goes through `claim`. `400 invalid_answer`. |
+| `/api/lookup?email=…` | GET    | —                   | What we know about an email. Answers a `GuestState`; never refuses, never writes. |
 | `/api/admin?key=…`    | GET    | —                   | Full dump for the dashboard, gated by `ADMIN_KEY`. `401 unauthorized`. |
 | `/api/admin`          | DELETE | `{ email }` or `{ all: true }` | Removes one assignment, or every one. Key goes in the `x-admin-key` header. `401 unauthorized`, `400 invalid_email`, `404 not_found`. |
 
@@ -137,7 +152,8 @@ cp .env.example .env.local
 ## Storage model
 
 There is **no database**. The whole party is a single JSON document
-(`{ version, assignments[] }`) and `src/lib/store.ts` picks one of two drivers
+(`{ version, assignments[], guests[] }` — `guests` holds every RSVP, including
+the people who said no and therefore never got an assignment) and `src/lib/store.ts` picks one of two drivers
 automatically, based on whether `BLOB_READ_WRITE_TOKEN` is set:
 
 | Driver | When                          | Where the data lives                              |
@@ -248,8 +264,12 @@ vercel env add ADMIN_KEY production   # or via the dashboard, then redeploy
 Then open `http://localhost:3000/admin` and type the key, or bookmark
 `http://localhost:3000/admin?key=some-long-random-string`.
 
-The key is compared in constant time server-side and is held in React state
-only — it is never written to `localStorage`, a cookie, or anywhere else. Note
+The key is compared in constant time server-side and is **remembered in
+`localStorage`** so the host does not retype it on every visit. That is a
+deliberate trade: anything able to run script on this origin can read it back,
+which React-state-only storage prevented. `Surt` clears it, a key that stops
+working is discarded on the spot, and rotating `ADMIN_KEY` invalidates whatever
+is stored. Note
 that passing it via `?key=` puts it in the URL (and therefore in browser history
 and server access logs), so prefer typing it in on shared machines. If
 `ADMIN_KEY` is not set, the endpoint refuses everything: the admin view is

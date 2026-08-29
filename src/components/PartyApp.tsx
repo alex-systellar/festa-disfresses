@@ -49,7 +49,15 @@ export type ClaimResult = {
   remaining: number;
 };
 
-type StoredGuest = { email: string; name: string };
+/** What the server knows about one email. Mirrors GuestState in lib/assign. */
+type GuestState = {
+  state: "assigned" | "answered" | "new";
+  result: ClaimResult | null;
+  rsvp: RsvpAnswer | null;
+  name: string;
+};
+
+type StoredGuest = { email: string; name: string; rsvp: RsvpAnswer | null };
 
 function isClaimResult(value: unknown): value is ClaimResult {
   if (typeof value !== "object" || value === null) return false;
@@ -70,12 +78,27 @@ function isClaimResult(value: unknown): value is ClaimResult {
   );
 }
 
+function isRsvpAnswer(value: unknown): value is RsvpAnswer {
+  return value === "yes" || value === "maybe" || value === "no";
+}
+
+function isGuestState(value: unknown): value is GuestState {
+  if (typeof value !== "object" || value === null) return false;
+  const v = value as Record<string, unknown>;
+  if (v.state !== "assigned" && v.state !== "answered" && v.state !== "new") {
+    return false;
+  }
+  if (v.rsvp !== null && !isRsvpAnswer(v.rsvp)) return false;
+  if (typeof v.name !== "string") return false;
+  // Only the assigned branch promises a country, so only it is checked.
+  return v.state === "assigned" ? isClaimResult(v.result) : true;
+}
+
 function errorCode(value: unknown): string | null {
   if (typeof value !== "object" || value === null) return null;
   const code = (value as Record<string, unknown>).error;
   return typeof code === "string" ? code : null;
 }
-
 
 function readStoredGuest(): StoredGuest | null {
   try {
@@ -88,6 +111,8 @@ function readStoredGuest(): StoredGuest | null {
     return {
       email: guest.email,
       name: typeof guest.name === "string" ? guest.name : "",
+      // Written by later versions than the one that stored this record.
+      rsvp: isRsvpAnswer(guest.rsvp) ? guest.rsvp : null,
     };
   } catch {
     return null;
@@ -121,6 +146,7 @@ export function PartyApp() {
   const [phase, setPhase] = useState<Phase>("boot");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [rsvp, setRsvp] = useState<RsvpAnswer | null>(null);
   const [result, setResult] = useState<ClaimResult | null>(null);
   const [pending, setPending] = useState<ClaimResult | null>(null);
   const [calm, setCalm] = useState(false);
@@ -136,7 +162,40 @@ export function PartyApp() {
   /** Mirrors `pending` so the reel's land callback can read it without a re-render. */
   const pendingRef = useRef<ClaimResult | null>(null);
 
-  // Returning guests: read their country straight back, no sorteig.
+  /** Everything the gate is allowed to complain about, in one place. */
+  const showGateError = useCallback((code: string | null) => {
+    setNameError(null);
+    setEmailError(null);
+    setBannerError(null);
+    if (code === "invalid_email") setEmailError(ERROR_TEXT.invalidEmail);
+    else if (code === "invalid_email_domain") setEmailError(ERROR_TEXT.invalidEmailDomain);
+    else if (code === "invalid_name") setNameError(ERROR_TEXT.invalidName);
+    else if (code === "device_limit") setBannerError(ERROR_TEXT.deviceLimit);
+    else if (code === "ip_limit") setBannerError(ERROR_TEXT.ipLimit);
+    else setBannerError(ERROR_TEXT.storage);
+  }, []);
+
+  /** Send the guest wherever their stored state says they belong. */
+  const goToState = useCallback((state: GuestState, fallbackName: string) => {
+    const known = state.name || fallbackName;
+    setName(known);
+    setRsvp(state.rsvp);
+
+    if (state.state === "assigned" && state.result) {
+      setResult(state.result);
+      setCalm(true);
+      setPhase("reveal");
+      return;
+    }
+    // Already told us no or maybe: honour it instead of asking again.
+    if (state.state === "answered" && state.rsvp && state.rsvp !== "yes") {
+      setPhase(state.rsvp === "no" ? "declined" : "maybe");
+      return;
+    }
+    setPhase("gate");
+  }, []);
+
+  // On load, ask what the server already knows about the remembered email.
   useEffect(() => {
     let cancelled = false;
 
@@ -148,6 +207,7 @@ export function PartyApp() {
       }
       setEmail(stored.email);
       setName(stored.name);
+      setRsvp(stored.rsvp);
 
       try {
         const response = await fetch(
@@ -156,23 +216,32 @@ export function PartyApp() {
         );
         if (cancelled) return;
         if (!response.ok) {
-          if (response.status === 404 || response.status === 400) {
-            clearStoredGuest();
-          }
+          // A stored address the server will not even parse is not worth keeping.
+          if (response.status === 400) clearStoredGuest();
           setPhase("gate");
           return;
         }
         const data: unknown = await response.json();
         if (cancelled) return;
-        if (isClaimResult(data)) {
-          setResult(data);
-          setCalm(true);
-          setPhase("reveal");
+        if (isGuestState(data)) {
+          goToState(data, stored.name);
+          writeStoredGuest({
+            email: stored.email,
+            name: data.name || stored.name,
+            rsvp: data.rsvp,
+          });
         } else {
           setPhase("gate");
         }
       } catch {
-        if (!cancelled) setPhase("gate");
+        if (cancelled) return;
+        // Offline. Fall back to what this browser remembers, so somebody who
+        // already declined is not asked the question a second time.
+        if (stored.rsvp === "no" || stored.rsvp === "maybe") {
+          setPhase(stored.rsvp === "no" ? "declined" : "maybe");
+        } else {
+          setPhase("gate");
+        }
       }
     };
 
@@ -180,13 +249,16 @@ export function PartyApp() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [goToState]);
 
-  // The details are only checked here; nothing is claimed until the guest has
-  // said they are coming. A country handed to a "no" is a country nobody at
-  // the party gets to wear.
+  /**
+   * Details submitted. Everything that can refuse this guest — a dead email
+   * domain, a browser that already registered, a network over its cap — is
+   * checked *here*, while their cursor is still in the field that caused it.
+   * Nothing is claimed: the country is only handed out after the RSVP.
+   */
   const handleSubmit = useCallback(
-    (event: FormEvent<HTMLFormElement>) => {
+    async (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault();
       if (busy) return;
 
@@ -204,9 +276,43 @@ export function PartyApp() {
 
       setBannerError(null);
       setRerollError(null);
-      setPhase("rsvp");
+      setBusy(true);
+
+      try {
+        const response = await fetch("/api/precheck", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ email: cleanEmail, name: cleanName }),
+        });
+        const data: unknown = await response.json().catch(() => null);
+        setBusy(false);
+
+        if (!response.ok || !isGuestState(data)) {
+          setPhase("gate");
+          showGateError(errorCode(data));
+          return;
+        }
+
+        writeStoredGuest({
+          email: cleanEmail,
+          name: data.name || cleanName,
+          rsvp: data.rsvp,
+        });
+        // A guest we have never heard of is the only one who gets asked.
+        if (data.state === "new") {
+          setName(data.name || cleanName);
+          setRsvp(data.rsvp);
+          setPhase("rsvp");
+          return;
+        }
+        goToState(data, cleanName);
+      } catch {
+        setBusy(false);
+        setPhase("gate");
+        setBannerError(ERROR_TEXT.network);
+      }
     },
-    [busy, email, name],
+    [busy, email, name, goToState, showGateError],
   );
 
   const claim = useCallback(async () => {
@@ -233,30 +339,20 @@ export function PartyApp() {
       const data: unknown = await response.json().catch(() => null);
 
       if (!response.ok || !isClaimResult(data)) {
-        const code = errorCode(data);
-        // Every one of these is fixed on the gate, not on the RSVP.
-        setPhase("gate");
+        // The precheck cleared these already, so landing here means something
+        // changed underneath — another browser, or the caps moving. Every one
+        // of them is fixed on the gate, not on the RSVP.
         setBusy(false);
-        if (code === "invalid_email") {
-          setEmailError(ERROR_TEXT.invalidEmail);
-        } else if (code === "invalid_email_domain") {
-          setEmailError(ERROR_TEXT.invalidEmailDomain);
-        } else if (code === "invalid_name") {
-          setNameError(ERROR_TEXT.invalidName);
-        } else if (code === "device_limit") {
-          setBannerError(ERROR_TEXT.deviceLimit);
-        } else if (code === "ip_limit") {
-          setBannerError(ERROR_TEXT.ipLimit);
-        } else {
-          setBannerError(ERROR_TEXT.storage);
-        }
+        setPhase("gate");
+        showGateError(errorCode(data));
         return;
       }
 
-      writeStoredGuest({ email: cleanEmail, name: cleanName });
+      setRsvp("yes");
+      writeStoredGuest({ email: cleanEmail, name: cleanName, rsvp: "yes" });
 
       // Only a genuinely new assignment earns the sorteig. A returning guest
-      // gets their country straight away, exactly like the localStorage path.
+      // gets their country straight away, exactly like the load path.
       const returning = !data.isNew;
       if (returning || prefersReducedMotion()) {
         setCalm(returning);
@@ -272,26 +368,40 @@ export function PartyApp() {
         setPending(data);
       }
     } catch {
-      setPhase("gate");
       setBusy(false);
+      setPhase("gate");
       setBannerError(ERROR_TEXT.network);
     }
-  }, [email, name]);
+  }, [email, name, showGateError]);
 
   const handleAnswer = useCallback(
-    (answer: RsvpAnswer) => {
+    async (answer: RsvpAnswer) => {
       if (busy) return;
-      if (answer === "no") {
-        setPhase("declined");
+      if (answer === "yes") {
+        void claim();
         return;
       }
-      if (answer === "maybe") {
-        setPhase("maybe");
-        return;
+
+      const cleanName = name.trim().replace(/\s+/g, " ");
+      const cleanEmail = email.trim().toLowerCase();
+      setBusy(true);
+      try {
+        await fetch("/api/rsvp", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ email: cleanEmail, name: cleanName, answer }),
+        });
+      } catch {
+        // The answer stands either way. Refusing to accept a "no" because the
+        // network hiccuped would be absurd; this browser remembers it below,
+        // and the worst case is being asked again on another device.
       }
-      void claim();
+      setBusy(false);
+      setRsvp(answer);
+      writeStoredGuest({ email: cleanEmail, name: cleanName, rsvp: answer });
+      setPhase(answer === "no" ? "declined" : "maybe");
     },
-    [busy, claim],
+    [busy, claim, email, name],
   );
 
   const handleReroll = useCallback(async () => {
@@ -364,6 +474,15 @@ export function PartyApp() {
     setBusy(false);
   }, []);
 
+  /** Back to the details, keeping them filled in. The universal "back". */
+  const handleBackToGate = useCallback(() => {
+    setBusy(false);
+    setBannerError(null);
+    setRerollError(null);
+    setPhase("gate");
+  }, []);
+
+  /** Not this person at all: forget the browser and start over empty. */
   const handleReset = useCallback(() => {
     clearStoredGuest();
     setResult(null);
@@ -371,6 +490,7 @@ export function PartyApp() {
     setPending(null);
     setName("");
     setEmail("");
+    setRsvp(null);
     setCalm(false);
     setBusy(false);
     setIsReroll(false);
@@ -394,8 +514,11 @@ export function PartyApp() {
       <Rsvp
         name={name}
         busy={busy}
-        onAnswer={handleAnswer}
-        onBack={() => setPhase("gate")}
+        answered={rsvp}
+        onAnswer={(answer) => {
+          void handleAnswer(answer);
+        }}
+        onBack={handleBackToGate}
       />
     );
   }
@@ -404,8 +527,9 @@ export function PartyApp() {
     return (
       <Farewell
         kind={phase === "declined" ? "no" : "maybe"}
+        name={name}
         onReconsider={() => setPhase("rsvp")}
-        onReset={handleReset}
+        onBack={handleBackToGate}
       />
     );
   }

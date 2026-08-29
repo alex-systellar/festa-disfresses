@@ -1,7 +1,7 @@
 import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { COUNTRIES, getCountry } from "@/data/countries";
-import { clearAssignments, isValidEmail, removeAssignment } from "@/lib/assign";
+import { clearAll, isValidEmail, removeGuest } from "@/lib/assign";
 import { activeDriver, readStore } from "@/lib/store";
 
 export const runtime = "nodejs";
@@ -47,11 +47,26 @@ export async function GET(request: Request) {
     }
   }
 
+  // Guests who answered but hold no country: every "no" and "maybe", plus
+  // anyone whose claim never completed. They are invisible in the assignments
+  // table by construction, and they are exactly who the host needs for a
+  // headcount.
+  const holders = new Set(data.assignments.map((a) => a.email));
+  const withoutCountry = data.guests
+    .filter((g) => !holders.has(g.email))
+    .sort((a, b) => b.rsvpAt.localeCompare(a.rsvpAt))
+    .map((g) => ({ email: g.email, name: g.name, rsvp: g.rsvp, rsvpAt: g.rsvpAt }));
+
+  const rsvpCounts = { yes: 0, maybe: 0, no: 0 };
+  for (const g of data.guests) rsvpCounts[g.rsvp] += 1;
+
   return NextResponse.json(
     {
       driver: activeDriver(),
       total: COUNTRIES.length,
       assigned: data.assignments.length,
+      rsvpCounts,
+      withoutCountry,
       /** Groups of more than one email sharing a single IP / browser. */
       duplicateIpGroups: [...byIp.values()].filter((emails) => emails.length > 1),
       duplicateDeviceGroups: [...byDevice.values()].filter((emails) => emails.length > 1),
@@ -120,7 +135,7 @@ export async function DELETE(request: Request) {
     // Wiping everything is spelled out explicitly, so a malformed body can
     // never be mistaken for "delete the lot".
     if (all === true) {
-      const removed = await clearAssignments();
+      const removed = await clearAll();
       return NextResponse.json({ removed }, { headers: { "cache-control": "no-store" } });
     }
 
@@ -128,7 +143,7 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "invalid_email" }, { status: 400 });
     }
 
-    const deleted = await removeAssignment(email);
+    const deleted = await removeGuest(email);
     if (!deleted) {
       return NextResponse.json({ error: "not_found" }, { status: 404 });
     }

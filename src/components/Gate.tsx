@@ -127,10 +127,10 @@ export function Gate({
             <hr className="perf" />
 
             <button type="submit" className="btn-festa" disabled={busy}>
-              {busy ? "Sortejant…" : "Tira la sort"}
+              {busy ? "Un moment…" : "Continua"}
             </button>
             <p className="mt-3 text-center font-mono text-[0.7rem] leading-4 tracking-wider text-paper/45">
-              Guardem el correu només per recordar quin país t&apos;ha tocat.
+              Encara no sortegem res: primer et preguntem si hi seràs.
             </p>
           </form>
 

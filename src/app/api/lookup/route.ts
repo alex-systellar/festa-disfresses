@@ -4,7 +4,13 @@ import { isValidEmail, lookup } from "@/lib/assign";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-/** Returning guests: read their country back without ever assigning a new one. */
+/**
+ * What we already know about an email, on page load.
+ *
+ * Answers the same shape as `/api/precheck` but enforces nothing and writes
+ * nothing: it is a read for a browser that already has a stored guest, so it
+ * must never refuse anybody or set a device cookie.
+ */
 export async function GET(request: Request) {
   const email = new URL(request.url).searchParams.get("email") ?? "";
   if (!isValidEmail(email)) {
@@ -12,9 +18,8 @@ export async function GET(request: Request) {
   }
 
   try {
-    const result = await lookup(email);
-    if (!result) return NextResponse.json({ error: "not_found" }, { status: 404 });
-    return NextResponse.json(result, { headers: { "cache-control": "no-store" } });
+    const state = await lookup(email);
+    return NextResponse.json(state, { headers: { "cache-control": "no-store" } });
   } catch (err) {
     console.error("[lookup] failed", err);
     return NextResponse.json({ error: "storage_unavailable" }, { status: 500 });

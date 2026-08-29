@@ -7,8 +7,12 @@ import {
   withLock,
   writeStore,
   type Assignment,
+  type Guest,
+  type RsvpAnswer,
   type StoreData,
 } from "@/lib/store";
+
+export type { RsvpAnswer } from "@/lib/store";
 
 // Re-exported so callers have one place to reach for email helpers.
 export { isValidEmail, normalizeEmail } from "@/lib/email";
@@ -32,6 +36,22 @@ export type ClaimResult = {
   /** True while the guest still has their one reroll in hand. */
   canReroll: boolean;
   remaining: number;
+};
+
+/**
+ * Everything known about one email, in the single shape both `/api/lookup`
+ * (on load) and `/api/precheck` (on submit) answer with.
+ *
+ * `assigned` holds a country. `answered` told us no or maybe and has none.
+ * `new` is anyone else — including someone who said yes but whose claim never
+ * landed, so a failed attempt never strands a guest.
+ */
+export type GuestState = {
+  state: "assigned" | "answered" | "new";
+  result: ClaimResult | null;
+  rsvp: RsvpAnswer | null;
+  /** Their stored name, so a returning guest never retypes it. */
+  name: string;
 };
 
 export class RerollUsedError extends Error {}
@@ -106,6 +126,54 @@ function toResult(assignment: Assignment, country: Country, data: StoreData, isN
   };
 }
 
+/** Writes the guest's answer, creating the record the first time. */
+function upsertGuest(
+  data: StoreData,
+  email: string,
+  name: string,
+  rsvp: RsvpAnswer,
+  ip?: string,
+  deviceId?: string,
+): boolean {
+  const existing = data.guests.find((g) => g.email === email);
+  const next: Guest = {
+    email,
+    // Never blank out a stored name with an empty one.
+    name: name || existing?.name || "",
+    rsvp,
+    rsvpAt: new Date().toISOString(),
+    ...(ip ? { ip } : {}),
+    ...(deviceId ? { deviceId } : {}),
+  };
+  if (!existing) {
+    data.guests.push(next);
+    return true;
+  }
+  if (existing.rsvp === next.rsvp && existing.name === next.name) return false;
+  Object.assign(existing, next);
+  return true;
+}
+
+function stateFrom(data: StoreData, email: string): GuestState {
+  const guest = data.guests.find((g) => g.email === email);
+  const existing = data.assignments.find((a) => a.email === email);
+  const country = existing ? getCountry(existing.countryCode) : undefined;
+
+  if (existing && country) {
+    return {
+      state: "assigned",
+      result: toResult(existing, country, data, false),
+      // Holding a country means yes, even for records that predate the RSVP.
+      rsvp: guest?.rsvp ?? "yes",
+      name: existing.name || guest?.name || "",
+    };
+  }
+  if (guest && guest.rsvp !== "yes") {
+    return { state: "answered", result: null, rsvp: guest.rsvp, name: guest.name };
+  }
+  return { state: "new", result: null, rsvp: guest?.rsvp ?? null, name: guest?.name ?? "" };
+}
+
 /** Pick uniformly from the untaken countries, ignoring `exclude`. */
 function pick(data: StoreData, exclude?: string): { country: Country; duplicate: boolean } {
   const taken = new Set(data.assignments.map((a) => a.countryCode));
@@ -170,6 +238,9 @@ export async function claim(
         existing.deviceId = deviceId;
         dirty = true;
       }
+      // Holding a country is a yes; backfill guests who claimed before the
+      // RSVP existed so the headcount is not missing them.
+      if (upsertGuest(data, email, name, "yes", ip, deviceId)) dirty = true;
       return { value: toResult(existing, country, data, false), dirty };
     }
     // Either brand new, or the stored code vanished from COUNTRIES because the
@@ -189,6 +260,7 @@ export async function claim(
       ...(duplicate ? { duplicate: true } : {}),
     };
     data.assignments.push(assignment);
+    upsertGuest(data, email, name, "yes", ip, deviceId);
     return { value: toResult(assignment, country, data, true), dirty: true };
   });
 }
@@ -221,15 +293,52 @@ export async function reroll(rawEmail: string): Promise<ClaimResult> {
   });
 }
 
-/** Look up an existing assignment without creating one. */
-export async function lookup(rawEmail: string): Promise<ClaimResult | null> {
+/** Everything known about an email. Never writes, never refuses. */
+export async function lookup(rawEmail: string): Promise<GuestState> {
+  const { data } = await readStore();
+  return stateFrom(data, normalizeEmail(rawEmail));
+}
+
+/**
+ * The same read, plus the refusal rules that a claim would apply.
+ *
+ * This is what lets the gate reject a second registration from one browser at
+ * the moment the details are submitted, instead of after the guest has already
+ * answered the RSVP and watched the reel start.
+ *
+ * Only a genuinely new guest is subject to the caps: someone coming back to
+ * their own country, or changing a no to a yes, is never refused their own
+ * record.
+ */
+export async function precheck(
+  rawEmail: string,
+  ip?: string,
+  deviceId?: string,
+): Promise<GuestState> {
   const email = normalizeEmail(rawEmail);
   const { data } = await readStore();
-  const existing = data.assignments.find((a) => a.email === email);
-  if (!existing) return null;
-  const country = getCountry(existing.countryCode);
-  if (!country) return null;
-  return toResult(existing, country, data, false);
+  const state = stateFrom(data, email);
+  if (state.state === "new") enforceLimits(data, email, ip, deviceId);
+  return state;
+}
+
+/**
+ * Store a no or a maybe. A yes is recorded by `claim` instead, so the answer
+ * and the country are written in one transaction and can never disagree.
+ */
+export async function recordRsvp(
+  rawEmail: string,
+  rawName: string,
+  answer: RsvpAnswer,
+  ip?: string,
+  deviceId?: string,
+): Promise<void> {
+  const email = normalizeEmail(rawEmail);
+  const name = normalizeName(rawName);
+  await mutate((data) => ({
+    value: undefined,
+    dirty: upsertGuest(data, email, name, answer, ip, deviceId),
+  }));
 }
 
 /* --------------------------------- ops only -------------------------------- */
@@ -240,13 +349,16 @@ export async function lookup(rawEmail: string): Promise<ClaimResult | null> {
  * Returns false when that email held nothing, so the caller can answer 404
  * rather than report a deletion that never happened.
  */
-export async function removeAssignment(rawEmail: string): Promise<boolean> {
+export async function removeGuest(rawEmail: string): Promise<boolean> {
   const email = normalizeEmail(rawEmail);
 
   return mutate((data) => {
-    const before = data.assignments.length;
+    const before = data.assignments.length + data.guests.length;
     data.assignments = data.assignments.filter((a) => a.email !== email);
-    const removed = data.assignments.length !== before;
+    // The RSVP goes with it. Leaving it behind would send a guest the host
+    // just deleted straight back to a farewell screen on their next visit.
+    data.guests = data.guests.filter((g) => g.email !== email);
+    const removed = data.assignments.length + data.guests.length !== before;
     return { value: removed, dirty: removed };
   });
 }
@@ -259,11 +371,13 @@ export async function removeAssignment(rawEmail: string): Promise<boolean> {
  * the ETag check and is retried against the emptied document. It can never be
  * half-applied, and it can never resurrect a record the wipe just removed.
  */
-export async function clearAssignments(): Promise<number> {
+export async function clearAll(): Promise<number> {
   return mutate((data) => {
     const removed = data.assignments.length;
+    const hadGuests = data.guests.length > 0;
     data.assignments = [];
-    return { value: removed, dirty: removed > 0 };
+    data.guests = [];
+    return { value: removed, dirty: removed > 0 || hadGuests };
   });
 }
 

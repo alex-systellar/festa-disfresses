@@ -171,7 +171,7 @@ export function Reveal({
               Com funciona
             </Link>
             <button type="button" onClick={onReset} className="btn-ghost">
-              No sóc jo · canviar correu
+              No sóc jo · comença de nou
             </button>
           </div>
         </footer>

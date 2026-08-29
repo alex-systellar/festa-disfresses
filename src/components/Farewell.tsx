@@ -10,10 +10,12 @@ const FAREWELL_STYLE = { "--c1": "#6C2BD9", "--c2": "#26D9C3" } as CSSProperties
 type FarewellProps = {
   /** `no` closes the door politely; `maybe` leaves it open. */
   kind: "no" | "maybe";
+  /** Used to make the goodbye personal; empty is fine. */
+  name: string;
   /** Back to the question: both answers are changed the same way. */
   onReconsider: () => void;
-  /** Wrong guest: clears the stored email and returns to the gate. */
-  onReset: () => void;
+  /** Back to the details, still filled in. Same affordance as every screen. */
+  onBack: () => void;
 };
 
 const COPY = {
@@ -29,8 +31,9 @@ const COPY = {
   },
 } as const;
 
-export function Farewell({ kind, onReconsider, onReset }: FarewellProps) {
+export function Farewell({ kind, name, onReconsider, onBack }: FarewellProps) {
   const copy = COPY[kind];
+  const first = name.trim().split(" ")[0] ?? "";
 
   return (
     <main className="night gate-shell" style={FAREWELL_STYLE}>
@@ -38,7 +41,7 @@ export function Farewell({ kind, onReconsider, onReset }: FarewellProps) {
 
       <div className="gate-inner gate-solo">
         <div className="rise poster-fit w-full text-center">
-          <p className="eyebrow">{copy.eyebrow}</p>
+          <p className="eyebrow">{first ? `${first} · ${copy.eyebrow}` : copy.eyebrow}</p>
           <h1 className="poster-title mt-4 text-balance">{copy.title}</h1>
           <p className="mx-auto mt-5 max-w-sm text-sm leading-snug text-paper/75">
             {copy.body}
@@ -48,10 +51,15 @@ export function Farewell({ kind, onReconsider, onReset }: FarewellProps) {
             <button type="button" onClick={onReconsider} className="btn-festa">
               M&apos;ho he repensat
             </button>
-            <button type="button" onClick={onReset} className="btn-outline">
-              No sóc jo · canviar correu
+            <button type="button" onClick={onBack} className="btn-outline">
+              ← Canvia les dades
             </button>
           </div>
+
+          <p className="mx-auto mt-6 max-w-sm font-mono text-[0.7rem] leading-4 tracking-wider text-paper/45">
+            Ho hem apuntat. Si tornes en aquest navegador no et tornarem a
+            preguntar — però pots canviar d&apos;opinió quan vulguis.
+          </p>
 
           <p className="mt-4">
             <Link href="/com-funciona" className="btn-ghost">

@@ -10,6 +10,8 @@ export type RsvpAnswer = "yes" | "maybe" | "no";
 type RsvpProps = {
   /** Only the first name: this is the one screen that talks to the guest. */
   name: string;
+  /** Their stored answer, when they have come back to change it. */
+  answered: RsvpAnswer | null;
   onAnswer: (answer: RsvpAnswer) => void;
   onBack: () => void;
   busy: boolean;
@@ -20,8 +22,9 @@ type RsvpProps = {
  * until somebody says they are coming — a country handed to a "no" is a
  * country nobody at the party gets to wear.
  */
-export function Rsvp({ name, onAnswer, onBack, busy }: RsvpProps) {
+export function Rsvp({ name, answered, onAnswer, onBack, busy }: RsvpProps) {
   const first = name.trim().split(" ")[0] ?? "";
+  const changing = answered === "no" || answered === "maybe";
 
   return (
     <main className="night gate-shell" style={RSVP_STYLE}>
@@ -30,7 +33,11 @@ export function Rsvp({ name, onAnswer, onBack, busy }: RsvpProps) {
       <div className="gate-inner gate-solo">
         <div className="ticket rise w-full">
           <p className="eyebrow">
-            {first ? `${first}, l'hora de la veritat` : "L'hora de la veritat"}
+            {changing
+              ? "Canvia la resposta"
+              : first
+                ? `${first}, l'hora de la veritat`
+                : "L'hora de la veritat"}
           </p>
           <h1 className="section-title mt-3">Hi seràs?</h1>
           <p className="mt-3 text-sm leading-snug text-paper/75">
@@ -55,7 +62,7 @@ export function Rsvp({ name, onAnswer, onBack, busy }: RsvpProps) {
               disabled={busy}
               className="btn-outline"
             >
-              Potser
+              Encara no ho sé
             </button>
             <button
               type="button"
@@ -70,7 +77,7 @@ export function Rsvp({ name, onAnswer, onBack, busy }: RsvpProps) {
 
         <p className="text-center">
           <button type="button" onClick={onBack} className="btn-ghost">
-            Torna enrere
+            ← Canvia les dades
           </button>
         </p>
       </div>

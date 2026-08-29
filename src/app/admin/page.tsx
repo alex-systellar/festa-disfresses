@@ -39,10 +39,22 @@ type AdminAssignment = {
   flagImage: string;
 };
 
+type RsvpAnswer = "yes" | "maybe" | "no";
+
+/** Somebody who answered but holds no country: every no, maybe, and dropout. */
+type PendingGuest = {
+  email: string;
+  name: string;
+  rsvp: RsvpAnswer;
+  rsvpAt: string;
+};
+
 type AdminData = {
   driver: "blob" | "file";
   total: number;
   assigned: number;
+  rsvpCounts: { yes: number; maybe: number; no: number };
+  withoutCountry: PendingGuest[];
   /** Groups of >1 email sharing one browser. Ranked first: hardest to fake. */
   duplicateDeviceGroups: string[][];
   /** Groups of >1 email sharing one IP. Housemates and carrier NAT live here. */
@@ -52,6 +64,39 @@ type AdminData = {
 };
 
 type Status = "idle" | "loading" | "ready" | "unauthorized" | "error";
+
+/**
+ * The admin key is remembered in localStorage so the host does not retype it
+ * every time. That is a deliberate trade: anything able to run script on this
+ * origin can read it, where React state could not be read back after a reload.
+ * `Surt` clears it, and rotating ADMIN_KEY invalidates whatever is stored.
+ */
+const KEY_STORAGE = "festa-disfresses:admin-key";
+
+function readStoredKey(): string | null {
+  try {
+    const value = window.localStorage.getItem(KEY_STORAGE);
+    return value && value.length > 0 ? value : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeStoredKey(key: string): void {
+  try {
+    window.localStorage.setItem(KEY_STORAGE, key);
+  } catch {
+    // Private mode: the session still works, it just will not be remembered.
+  }
+}
+
+function clearStoredKey(): void {
+  try {
+    window.localStorage.removeItem(KEY_STORAGE);
+  } catch {
+    // Nothing to do.
+  }
+}
 
 type SortBy = "date" | "name";
 
@@ -297,9 +342,16 @@ function ConfirmDelete({
         ) : (
           <p className="mt-2 text-sm text-white/60">
             <strong className="text-white">{pending.name}</strong>{" "}
-            <span className="font-mono text-xs text-white/40">({pending.email})</span> té{" "}
-            <strong className="text-white">{pending.country}</strong>. Si l&apos;esborres, el país
-            torna al pool i pot tocar a algú altre.
+            <span className="font-mono text-xs text-white/40">({pending.email})</span>{" "}
+            {pending.country === "cap país" ? (
+              <>no té cap país, només una resposta. Si l&apos;esborres, se li tornarà a preguntar
+              si hi serà.</>
+            ) : (
+              <>
+                té <strong className="text-white">{pending.country}</strong>. Si l&apos;esborres,
+                el país torna al pool i pot tocar a algú altre.
+              </>
+            )}
           </p>
         )}
 
@@ -337,7 +389,6 @@ function ConfirmDelete({
 
 export default function AdminPage() {
   const [keyInput, setKeyInput] = useState("");
-  // The live key is kept in React state only — never localStorage, never a cookie.
   const [activeKey, setActiveKey] = useState<string | null>(null);
   const [status, setStatus] = useState<Status>("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -362,6 +413,7 @@ export default function AdminPage() {
 
   const apply = useCallback((key: string, result: LoadResult) => {
     if (result.kind === "ok") {
+      writeStoredKey(key);
       setData(result.data);
       setStatus("ready");
       setErrorMessage(null);
@@ -372,6 +424,8 @@ export default function AdminPage() {
       return;
     }
     if (result.kind === "unauthorized") {
+      // Rotated or mistyped: a stored key that no longer works is just noise.
+      clearStoredKey();
       setData(null);
       setStatus("unauthorized");
       setErrorMessage(null);
@@ -396,11 +450,12 @@ export default function AdminPage() {
   useEffect(() => {
     if (bootstrapped.current) return;
     bootstrapped.current = true;
-    const fromUrl = new URLSearchParams(window.location.search).get("key");
-    if (!fromUrl) return;
+    // ?key= wins: pasting a fresh link should override a stale stored key.
+    const key = new URLSearchParams(window.location.search).get("key") ?? readStoredKey();
+    if (!key) return;
     let cancelled = false;
-    void fetchAdmin(fromUrl).then((result) => {
-      if (!cancelled) apply(fromUrl, result);
+    void fetchAdmin(key).then((result) => {
+      if (!cancelled) apply(key, result);
     });
     return () => {
       cancelled = true;
@@ -633,6 +688,7 @@ export default function AdminPage() {
             <button
               type="button"
               onClick={() => {
+                clearStoredKey();
                 setActiveKey(null);
                 setData(null);
                 setKeyInput("");
@@ -679,6 +735,11 @@ export default function AdminPage() {
             value={String(duplicates)}
             hint="pool exhaurit"
             tone={duplicates > 0 ? "warn" : "neutral"}
+          />
+          <Stat
+            label="Respostes"
+            value={`${data.rsvpCounts.yes} sí`}
+            hint={`${data.rsvpCounts.maybe} potser · ${data.rsvpCounts.no} no`}
           />
           <Stat
             label="Driver"
@@ -952,6 +1013,57 @@ export default function AdminPage() {
             </p>
           </div>
         </section>
+
+        {data.withoutCountry.length > 0 ? (
+          <section className="mt-6">
+            <h2 className="mb-2 text-xs uppercase tracking-widest text-white/40">
+              Han respost sense agafar país ({data.withoutCountry.length})
+            </h2>
+            <p className="mb-2 text-[11px] text-white/35">
+              No surten a la taula de dalt perquè no tenen cap país. Un
+              &laquo;potser&raquo; encara pot tornar i tirar.
+            </p>
+            <ul className="flex flex-col gap-1.5">
+              {data.withoutCountry.map((g) => (
+                <li
+                  key={g.email}
+                  className="flex flex-wrap items-center gap-2 rounded-md border border-white/10 bg-white/[0.02] px-2.5 py-1.5 text-sm"
+                >
+                  <span className="font-medium text-white">{g.name || "—"}</span>
+                  <span className="font-mono text-xs text-white/45">{g.email}</span>
+                  <span
+                    className={`rounded border px-1.5 py-0.5 text-[10px] uppercase tracking-wide ${
+                      g.rsvp === "no"
+                        ? "border-white/15 bg-white/[0.04] text-white/50"
+                        : "border-amber-400/30 bg-amber-400/[0.08] text-amber-300/90"
+                    }`}
+                  >
+                    {g.rsvp === "no" ? "no hi serà" : g.rsvp === "maybe" ? "potser" : "sí"}
+                  </span>
+                  <span className="text-[11px] text-white/30" title={absoluteTime(g.rsvpAt)}>
+                    {relativeTime(g.rsvpAt, now)}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDeleteError(null);
+                      setPendingDelete({
+                        kind: "one",
+                        email: g.email,
+                        name: g.name || g.email,
+                        country: "cap país",
+                      });
+                    }}
+                    title={`Esborra la resposta de ${g.name || g.email}`}
+                    className="ml-auto rounded-md border border-white/10 px-2 py-1 text-[11px] text-white/45 transition hover:border-red-400/50 hover:bg-red-400/10 hover:text-red-200"
+                  >
+                    Esborra
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
 
         <section className="mt-6 pb-10">
           <h2 className="mb-2 text-xs uppercase tracking-widest text-white/40">

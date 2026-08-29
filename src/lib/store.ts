@@ -40,9 +40,31 @@ export type Assignment = {
   duplicate?: boolean;
 };
 
+/** What the guest answered when asked whether they are coming. */
+export type RsvpAnswer = "yes" | "maybe" | "no";
+
+/**
+ * Everyone who has told us something, whether or not they ended up with a
+ * country. A "no" leaves no assignment behind, so without this record the app
+ * would forget the answer the moment the tab closed and ask again on the next
+ * visit — and the host would have no headcount at all.
+ */
+export type Guest = {
+  /** Canonical email. Same identity as an assignment's. */
+  email: string;
+  name: string;
+  rsvp: RsvpAnswer;
+  /** When they last answered; changing your mind overwrites it. */
+  rsvpAt: string;
+  ip?: string;
+  deviceId?: string;
+};
+
 export type StoreData = {
   version: 1;
   assignments: Assignment[];
+  /** Indexed by the same canonical email as `assignments`. */
+  guests: Guest[];
 };
 
 /**
@@ -52,7 +74,7 @@ export type StoreData = {
  * requests for the lifetime of the process.
  */
 function emptyStore(): StoreData {
-  return { version: 1, assignments: [] };
+  return { version: 1, assignments: [], guests: [] };
 }
 
 const BLOB_PATHNAME = "festa-disfresses/assignments.json";
@@ -124,6 +146,27 @@ function migrate(raw: unknown): Assignment | null {
   };
 }
 
+const RSVP_VALUES: readonly RsvpAnswer[] = ["yes", "maybe", "no"];
+
+function isRsvp(value: unknown): value is RsvpAnswer {
+  return typeof value === "string" && (RSVP_VALUES as readonly string[]).includes(value);
+}
+
+/** One stored RSVP, or null if the record is unusable. */
+function migrateGuest(raw: unknown): Guest | null {
+  if (!raw || typeof raw !== "object") return null;
+  const g = raw as Partial<Guest>;
+  if (typeof g.email !== "string" || !isRsvp(g.rsvp)) return null;
+
+  return {
+    ...g,
+    email: normalizeEmail(g.email),
+    rsvp: g.rsvp,
+    name: typeof g.name === "string" ? g.name : "",
+    rsvpAt: typeof g.rsvpAt === "string" ? g.rsvpAt : new Date(0).toISOString(),
+  };
+}
+
 function parse(raw: string): StoreData {
   let parsed: Partial<StoreData>;
   try {
@@ -133,11 +176,19 @@ function parse(raw: string): StoreData {
     throw new Error("assignments.json is not valid JSON");
   }
   if (!parsed || !Array.isArray(parsed.assignments)) return emptyStore();
+  // `guests` postdates the first documents written, so its absence is normal
+  // rather than corruption — every reader must cope with it being missing.
+  const guests = Array.isArray(parsed.guests) ? parsed.guests : [];
+  const byEmail = new Map<string, Guest>();
+  for (const g of guests.map(migrateGuest)) {
+    if (g) byEmail.set(g.email, g);
+  }
   return {
     version: 1,
     assignments: dedupe(
       parsed.assignments.map(migrate).filter((a): a is Assignment => a !== null),
     ),
+    guests: [...byEmail.values()],
   };
 }
 
