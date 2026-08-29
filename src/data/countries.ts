@@ -87,7 +87,7 @@ export const COUNTRIES: Country[] = [
     flagImage: "/flags/DE.svg",
     colors: ["#000000", "#DD0000"],
     anthem: { title: "Das Lied der Deutschen", source: "National anthem of Germany - U.S. Army 1st Armored Division Band.ogg" },
-    song: { search: "Erika auf der Heide", match: "lustigen vagabunden" },
+    song: { search: "Wir singen und marschieren Soldatenlieder", match: "major hans friess" },
   },
   {
     code: "AT",
@@ -240,7 +240,7 @@ export const COUNTRIES: Country[] = [
     flagImage: "/flags/GR.svg",
     colors: ["#0D5EAF", "#FFFFFF"],
     anthem: { title: "Hymn to Liberty", source: "Hymn to liberty instrumental.oga" },
-    song: { search: "Zorba the Greek Sirtaki Theodorakis", match: "theodorakis" },
+    song: { search: "Zorba the Greek Sirtaki Theodorakis", match: "theodorakis", start: 10 },
   },
   {
     code: "EG",
