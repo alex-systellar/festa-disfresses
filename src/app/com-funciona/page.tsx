@@ -20,11 +20,11 @@ const PAGE_STYLE = { "--c1": "#FF2E88", "--c2": "#6C2BD9" } as CSSProperties;
 const STEPS = [
   {
     title: "Sorteig",
-    body: "Entra el nom i el correu, digues si hi seràs i et toca un país. Si no t'agrada en tens una segona tirada — només una, i la segona és definitiva.",
+    body: "Entra el nom i el correu, fes RSPV i et tocarà un país. Si no t'agrada tens una segona tirada però la segona és definitiva.",
   },
   {
     title: "Prepara la disfressa",
-    body: "És lliure: no et diem què has de portar, només de quin país vas. Tens setmanes per pensar-la, i ningú més de la festa portarà el teu país.",
+    body: "Tens temps de sobres per preparar-ho!",
   },
   {
     title: "Concurs",
