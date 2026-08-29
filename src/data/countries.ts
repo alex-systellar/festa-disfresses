@@ -96,7 +96,7 @@ export const COUNTRIES: Country[] = [
     flagImage: "/flags/AT.svg",
     colors: ["#ED2939", "#FFFFFF"],
     anthem: { title: "Land der Berge, Land am Strome", source: "Land der Berge Land am Strome instrumental.ogg" },
-    song: { search: "Rock Me Amadeus Falco", match: "rock me amadeus" },
+    song: { search: "Anton aus Tirol DJ Otzi", match: "anton aus tirol — anton" },
   },
   {
     code: "MX",
@@ -321,7 +321,7 @@ export const COUNTRIES: Country[] = [
     flagImage: "/flags/PE.svg",
     colors: ["#D91023", "#FFFFFF"],
     anthem: { title: "Himno Nacional del Perú", source: "United States Navy Band - Marcha Nacional del Perú.ogg" },
-    song: { search: "Wendy Sulca Mi Tetita", match: "la tetita — wendy" },
+    song: { search: "Wendy Sulca Mi Tetita", match: "la tetita — wendy", start: 15 },
   },
   {
     code: "TH",
