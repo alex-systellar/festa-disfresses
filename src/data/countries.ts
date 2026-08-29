@@ -88,7 +88,7 @@ export const COUNTRIES: Country[] = [
     flagImage: "/flags/US.svg",
     colors: ["#B22234", "#3C3B6E"],
     anthem: { title: "The Star-Spangled Banner", source: "Star Spangled Banner instrumental.ogg" },
-    song: { search: "Free Bird Lynyrd Skynyrd", match: "pronounced leh-nerd skin-nerd", start: 10 },
+    song: { search: "Free Bird Lynyrd Skynyrd", match: "pronounced leh-nerd skin-nerd", start: 15 },
   },
   {
     code: "DE",
