@@ -159,7 +159,7 @@ export const COUNTRIES: Country[] = [
     flagImage: "/flags/IN.svg",
     colors: ["#FF9933", "#138808"],
     anthem: { title: "Jana Gana Mana", source: "Jana Gana Mana instrumental.ogg" },
-    song: { search: "Tunak Tunak Tun Daler Mehndi", match: "tunak tunak tun — daler" },
+    song: { search: "Mundian To Bach Ke Panjabi MC", match: "mundian to bach ke — panjabi mc" },
   },
   {
     code: "CN",
@@ -285,7 +285,7 @@ export const COUNTRIES: Country[] = [
     flagImage: "/flags/IE.svg",
     colors: ["#169B62", "#FF883E"],
     anthem: { title: "Amhrán na bhFiann", source: "Ireland National Anthem (Amhrán na bhFiann) 1960s.ogg" },
-    song: { search: "Whiskey in the Jar The Dubliners", match: "dubliners" },
+    song: { search: "Drunken Sailor Irish Rovers", match: "drunken sailor — the irish rovers" },
   },
   {
     code: "KR",

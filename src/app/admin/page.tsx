@@ -320,7 +320,10 @@ function SongPreview({ code, label }: { code: string; label: string }) {
         onPause={() => setPlaying(false)}
         onEnded={() => setPlaying(false)}
         onLoadedMetadata={(e) => {
-          if (start > 0) e.currentTarget.currentTime = start;
+          const el = e.currentTarget;
+          if (start > 0) {
+            el.currentTime = Number.isFinite(el.duration) && start >= el.duration - 1 ? 0 : start;
+          }
         }}
         onError={() => setPlaying(false)}
       />

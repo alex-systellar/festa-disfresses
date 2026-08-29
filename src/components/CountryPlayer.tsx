@@ -75,11 +75,25 @@ export function CountryPlayer({ code, anthemTitle, hasRecording, autoplay }: Cou
    */
   const start = usingSong ? (getCountry(code)?.song?.start ?? 0) : 0;
 
+  /**
+   * Offsets are hand-written, and the previews are only ~30s. One set past the
+   * end would end playback the instant it began and — through the loop below —
+   * restart it just as fast, so an out-of-range offset opens the clip normally
+   * instead of spinning.
+   */
+  const seekToStart = useCallback(
+    (el: HTMLAudioElement) => {
+      if (start <= 0) return;
+      el.currentTime = Number.isFinite(el.duration) && start >= el.duration - 1 ? 0 : start;
+    },
+    [start],
+  );
+
   useEffect(() => {
     const el = audioRef.current;
     if (!el) return;
     el.volume = DEFAULT_VOLUME;
-    if (start > 0 && el.readyState >= 1) el.currentTime = start;
+    if (el.readyState >= 1) seekToStart(el);
 
     if (autoplay) {
       // Rejection is expected (autoplay policy); the onPlay/onPause handlers
@@ -88,7 +102,7 @@ export function CountryPlayer({ code, anthemTitle, hasRecording, autoplay }: Cou
     }
 
     return () => el.pause();
-  }, [autoplay, code, src, start]);
+  }, [autoplay, code, src, seekToStart]);
 
   const toggle = useCallback(() => {
     const el = audioRef.current;
@@ -138,12 +152,10 @@ export function CountryPlayer({ code, anthemTitle, hasRecording, autoplay }: Cou
         // replay the run-up the offset exists to skip.
         onEnded={(e) => {
           const el = e.currentTarget;
-          el.currentTime = start;
+          seekToStart(el);
           void el.play().catch(() => setPlaying(false));
         }}
-        onLoadedMetadata={(e) => {
-          if (start > 0) e.currentTarget.currentTime = start;
-        }}
+        onLoadedMetadata={(e) => seekToStart(e.currentTarget)}
         onError={handleError}
       />
 
