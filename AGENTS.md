@@ -37,8 +37,9 @@ and `ADMIN_KEY` for `/admin`.
 
 There is no test runner. Verification is an end-to-end script run against a
 real server — see the API contract in `src/app/api/*/route.ts`. Start it with
-`EMAIL_DNS_CHECK=off`, since `@example.com` has no MX records by design and the
-claim route rejects undeliverable domains.
+`EMAIL_DNS_CHECK=off MAX_PER_IP=off MAX_PER_DEVICE=off`: `@example.com` has no
+MX records by design, and the suite makes forty-odd claims from one loopback
+address, which the duplicate limits would otherwise refuse.
 
 Assets are committed and regenerated with `npm run anthems` / `npm run flags`.
 Both are idempotent and skip what already exists.

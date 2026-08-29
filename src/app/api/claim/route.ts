@@ -1,5 +1,11 @@
 import { NextResponse } from "next/server";
-import { claim, IpLimitError, isValidEmail, isValidName } from "@/lib/assign";
+import {
+  claim,
+  DeviceLimitError,
+  IpLimitError,
+  isValidEmail,
+  isValidName,
+} from "@/lib/assign";
 import { deviceCookie, newDeviceId, readDeviceId } from "@/lib/device";
 import { checkEmailDomain } from "@/lib/email";
 import { clientIp } from "@/lib/request";
@@ -43,8 +49,12 @@ export async function POST(request: Request) {
     response.cookies.set(deviceCookie(deviceId));
     return response;
   } catch (err) {
+    // 403, not 429: this is a refusal, not a rate limit. Retrying never helps.
+    if (err instanceof DeviceLimitError) {
+      return NextResponse.json({ error: "device_limit" }, { status: 403 });
+    }
     if (err instanceof IpLimitError) {
-      return NextResponse.json({ error: "ip_limit" }, { status: 429 });
+      return NextResponse.json({ error: "ip_limit" }, { status: 403 });
     }
     console.error("[claim] failed", err);
     return NextResponse.json({ error: "storage_unavailable" }, { status: 500 });

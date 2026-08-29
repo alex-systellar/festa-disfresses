@@ -23,7 +23,9 @@ const ERROR_TEXT = {
     "No hem pogut apuntar-te ara mateix. Espera uns segons i torna-ho a provar.",
   network: "No arribem a la festa. Comprova la connexió i torna-ho a provar.",
   ipLimit:
-    "Ja s'ha repartit un país des d'aquesta connexió. Parla amb qui organitza la festa.",
+    "Ja s'han repartit prou països des d'aquesta connexió. Si sou més d'un a casa, parla amb qui organitza la festa.",
+  deviceLimit:
+    "Aquest dispositiu ja té un país amb un altre correu. Un país per persona! Si de debò no ets tu, parla amb qui organitza la festa.",
   rerollUsed: "Ja has fet servir la teva segona tirada. Aquest país és el bo.",
   rerollMissing:
     "No trobem la teva inscripció. Torna a entrar el nom i el correu.",
@@ -241,6 +243,8 @@ export function PartyApp() {
           setEmailError(ERROR_TEXT.invalidEmailDomain);
         } else if (code === "invalid_name") {
           setNameError(ERROR_TEXT.invalidName);
+        } else if (code === "device_limit") {
+          setBannerError(ERROR_TEXT.deviceLimit);
         } else if (code === "ip_limit") {
           setBannerError(ERROR_TEXT.ipLimit);
         } else {

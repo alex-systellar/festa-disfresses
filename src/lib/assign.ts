@@ -36,18 +36,63 @@ export type ClaimResult = {
 
 export class RerollUsedError extends Error {}
 export class NotFoundError extends Error {}
+
+/** Refused because this browser already claimed under another address. */
+export class DeviceLimitError extends Error {}
+/** Refused because this network already claimed the allowed number of times. */
 export class IpLimitError extends Error {}
 
 /**
- * Optional hard cap on assignments per IP. Unset (the default) means no cap,
- * because everyone at a party shares one NAT and a cap would lock most guests
- * out. Set MAX_PER_IP=1 only if guests are joining from separate networks.
+ * Hard limits on new claims. These BLOCK, they do not merely flag.
+ *
+ * Defaults are asymmetric on purpose. A repeated device is a browser profile
+ * registering twice, which is almost always one person taking a second
+ * country, so one is the cap. A repeated IP is a household — couples and
+ * housemates share one legitimately — so the default leaves room for two
+ * before refusing.
+ *
+ * Set either to "off" (or 0) to stop enforcing it. Raise MAX_PER_IP for a
+ * shared flat; every refusal is a real guest who cannot get in without you.
  */
-function maxPerIp(): number | null {
-  const raw = process.env.MAX_PER_IP;
-  if (!raw) return null;
+const DEFAULT_MAX_PER_DEVICE = 1;
+const DEFAULT_MAX_PER_IP = 2;
+
+function limitFrom(raw: string | undefined, fallback: number): number | null {
+  if (raw === undefined || raw === "") return fallback;
+  if (raw.toLowerCase() === "off") return null;
   const n = Number.parseInt(raw, 10);
-  return Number.isFinite(n) && n > 0 ? n : null;
+  if (!Number.isFinite(n) || n <= 0) return null;
+  return n;
+}
+
+function maxPerDevice(): number | null {
+  return limitFrom(process.env.MAX_PER_DEVICE, DEFAULT_MAX_PER_DEVICE);
+}
+
+function maxPerIp(): number | null {
+  return limitFrom(process.env.MAX_PER_IP, DEFAULT_MAX_PER_IP);
+}
+
+/**
+ * Enforced only for a genuinely new email — a returning guest has already
+ * short-circuited above, so nobody can be locked out of the country they hold.
+ */
+function enforceLimits(data: StoreData, email: string, ip?: string, deviceId?: string): void {
+  const deviceCap = maxPerDevice();
+  if (deviceCap !== null && deviceId) {
+    const others = data.assignments.filter((a) => a.deviceId === deviceId && a.email !== email);
+    if (others.length >= deviceCap) {
+      throw new DeviceLimitError(`device already claimed as ${others.map((a) => a.email).join(", ")}`);
+    }
+  }
+
+  const ipCap = maxPerIp();
+  if (ipCap !== null && ip) {
+    const others = data.assignments.filter((a) => a.ip === ip && a.email !== email);
+    if (others.length >= ipCap) {
+      throw new IpLimitError(`ip ${ip} already has ${others.length} assignments`);
+    }
+  }
 }
 
 function toResult(assignment: Assignment, country: Country, data: StoreData, isNew: boolean): ClaimResult {
@@ -131,11 +176,7 @@ export async function claim(
     // list was edited mid-party — in which case reassign rather than 500.
     if (existing) data.assignments = data.assignments.filter((a) => a.email !== email);
 
-    const cap = maxPerIp();
-    if (cap !== null && ip) {
-      const fromIp = data.assignments.filter((a) => a.ip === ip).length;
-      if (fromIp >= cap) throw new IpLimitError(`ip ${ip} already has ${fromIp} assignments`);
-    }
+    enforceLimits(data, email, ip, deviceId);
 
     const { country, duplicate } = pick(data);
     const assignment: Assignment = {
@@ -189,6 +230,41 @@ export async function lookup(rawEmail: string): Promise<ClaimResult | null> {
   const country = getCountry(existing.countryCode);
   if (!country) return null;
   return toResult(existing, country, data, false);
+}
+
+/* --------------------------------- ops only -------------------------------- */
+
+/**
+ * Drop one guest's assignment, handing their country back to the pool.
+ *
+ * Returns false when that email held nothing, so the caller can answer 404
+ * rather than report a deletion that never happened.
+ */
+export async function removeAssignment(rawEmail: string): Promise<boolean> {
+  const email = normalizeEmail(rawEmail);
+
+  return mutate((data) => {
+    const before = data.assignments.length;
+    data.assignments = data.assignments.filter((a) => a.email !== email);
+    const removed = data.assignments.length !== before;
+    return { value: removed, dirty: removed };
+  });
+}
+
+/**
+ * Empty the whole party. Returns how many assignments were destroyed.
+ *
+ * Runs through the same locked read-modify-write as claim and reroll, so a
+ * claim landing at the same instant either commits before the wipe or loses
+ * the ETag check and is retried against the emptied document. It can never be
+ * half-applied, and it can never resurrect a record the wipe just removed.
+ */
+export async function clearAssignments(): Promise<number> {
+  return mutate((data) => {
+    const removed = data.assignments.length;
+    data.assignments = [];
+    return { value: removed, dirty: removed > 0 };
+  });
 }
 
 function remainingCount(assignments: Assignment[]): number {
