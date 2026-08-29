@@ -32,10 +32,10 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: "El Mundialet",
   description:
-    "El sorteig et dona un país, tu hi poses la disfressa. Entra el teu correu i descobreix de què vas vestit.",
+    "Benvingut/da a la festa anual més top de l'upper diagonal de Barcelona",
   openGraph: {
     title: "El Mundialet",
-    description: "El sorteig et dona un país, tu hi poses la disfressa.",
+    description: "Aquest any don Claudio ens ha preparat una manera més guai d'assignar les disfresses",
     locale: "ca_ES",
     type: "website",
   },
