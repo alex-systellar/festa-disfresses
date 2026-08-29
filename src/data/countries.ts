@@ -134,7 +134,7 @@ export const COUNTRIES: Country[] = [
     flagImage: "/flags/IT.svg",
     colors: ["#008C45", "#CD212A"],
     anthem: { title: "Il Canto degli Italiani", source: "Inno di Mameli instrumental.ogg" },
-    song: { search: "Il Mondo Jimmy Fontana", match: "grandi interpreti italiani" },
+    song: { search: "Il Mondo Jimmy Fontana", match: "i grandi successi originali" },
   },
   {
     code: "ES",
