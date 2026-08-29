@@ -61,7 +61,22 @@ const FILE_PATH = path.join(process.cwd(), "data", "assignments.json");
 export type Driver = "blob" | "file";
 
 export function activeDriver(): Driver {
-  return process.env.BLOB_READ_WRITE_TOKEN ? "blob" : "file";
+  return hasBlobCredentials() ? "blob" : "file";
+}
+
+/**
+ * Vercel provisions Blob credentials two different ways, and a store connected
+ * through the current dashboard flow only gets the second:
+ *
+ *  - a long-lived `BLOB_READ_WRITE_TOKEN`, or
+ *  - OIDC: `BLOB_STORE_ID` plus a short-lived `VERCEL_OIDC_TOKEN` that the
+ *    runtime refreshes on its own (@vercel/blob picks it up automatically).
+ *
+ * Checking only the first would silently fall back to the file driver on a
+ * perfectly well-configured deployment.
+ */
+function hasBlobCredentials(): boolean {
+  return Boolean(process.env.BLOB_READ_WRITE_TOKEN || process.env.BLOB_STORE_ID);
 }
 
 /** True when running on Vercel, where everything outside /tmp is read-only. */
@@ -77,10 +92,11 @@ function onVercel(): boolean {
 function assertWritable(): void {
   if (activeDriver() === "file" && onVercel()) {
     throw new Error(
-      "No BLOB_READ_WRITE_TOKEN is set, so assignments would be written to the " +
-        "deployment filesystem — which is read-only on Vercel. Create a Blob " +
-        "store (Vercel dashboard -> Storage -> Blob), connect it to this " +
-        "project and redeploy; the token is injected automatically.",
+      "No Blob credentials found (neither BLOB_READ_WRITE_TOKEN nor " +
+        "BLOB_STORE_ID), so assignments would be written to the deployment " +
+        "filesystem — which is read-only on Vercel. Create a Blob store " +
+        "(Storage -> Blob), connect it to this project and redeploy; the " +
+        "variables are injected automatically.",
     );
   }
 }
