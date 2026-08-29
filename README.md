@@ -1,6 +1,6 @@
-# Festa de Disfresses
+# El Mundialet
 
-<img src="public/logo-banner.svg" alt="Festa de Disfresses" width="620">
+<img src="public/logo-banner.svg" alt="El Mundialet" width="620">
 
 A tiny Next.js app for a birthday costume party. A guest types their name and
 email and the app hands them **one country** — its flag, its colours and a clip
@@ -347,27 +347,46 @@ new mp3 together with the updated `CREDITS.md`.
 
 ## The logo
 
-Four SVGs, one wordmark. The type is the page's own poster face — `FESTA` and
-`DISFRESSES` justified to the same measure, which lands them on an exact 2:1
-hierarchy, with the magenta-then-ink hard shadow from `.poster-title`.
+**El Mundialet** — a trophy with a bouquet of flags bursting out of the bowl,
+over the wordmark. The type is the page's own poster face with the
+magenta-then-ink hard shadow from `.poster-title`; in `MUNDIALET` the `-ET` is
+set in gold, because the diminutive is the joke.
 
-| File                       | Use                                                       |
-| -------------------------- | --------------------------------------------------------- |
-| `public/logo.svg`          | The full lockup, transparent background. Site header, docs. |
-| `public/logo-mark.svg`     | 512 square `FD` tile. WhatsApp and GitHub avatars.          |
-| `public/logo-banner.svg`   | 1200×630 poster. This README, link previews.                |
-| `src/app/icon.svg`         | Favicon. Next serves it at `/icon.svg`.                     |
+| File                        | Use                                                          |
+| --------------------------- | ------------------------------------------------------------ |
+| `public/logo.svg`           | Stacked poster lockup, transparent background.                |
+| `public/logo-horizontal.svg`| Cup beside the type. Use this in a header — see below.        |
+| `public/logo-mark.svg`      | 512 square tile, cup only. WhatsApp and GitHub avatars.       |
+| `public/logo-banner.svg`    | 1200×630 poster. This README, link previews.                  |
+| `src/app/icon.svg`          | Favicon. Next serves it at `/icon.svg`.                       |
+| `public/logo-cup.svg`       | Trophy alone, transparent. Used on the gate above the title.  |
+| `public/logo-mark-512.png`  | 512×512 raster of the mark — GitHub repo/org avatar.          |
+| `public/logo-social-1280x640.png` | 1280×640 raster — GitHub Settings → Social preview.     |
 
-Two things are deliberate:
+The five flags are **CO · JP · CT · SE · JM**, inlined from `public/flags`
+(flag-icons, MIT). The Senyera is the centre and tallest. The other four were
+picked for a different graphic device each — bands, disc, cross, saltire — so
+they stay distinguishable at pennant size, and three of the five carry gold,
+which is what ties them to the cup. Each gets the same hairline paper ring
+`.flag-face` uses, so pale flags keep an edge against the aubergine.
+
+Four things are deliberate:
 
 - **The letterforms are outlines, not text.** A favicon and a chat avatar load
   no `@font-face`, so a `<text>` element would fall back to Arial in exactly
   the places the logo matters most. The paths are [Bungee](https://djr.com/bungee/)
   (SIL OFL 1.1) converted to outlines; the attribution is a comment in each file.
+- **The flags are inlined, not `<img>`.** Same reason: an avatar or a favicon
+  cannot fetch a second asset, so each file has to stand alone. Flag ids are
+  namespaced per country (`CT_…`), which is also why two of these SVGs can be
+  pasted inline into one HTML page without clipping each other.
 - **The mark fits inside a centred circle.** WhatsApp and GitHub crop avatars
-  round, so `FD` and its shadow stay within the inscribed circle of the square —
-  nothing clips. `icon.svg` drops the dashed rule and the second shadow that
-  turn to mush below 32px.
+  round, so the whole trophy stays within the inscribed circle of the square.
+- **Use the horizontal lockup in a header.** In the stacked one the cup takes
+  most of the height, so at a 44px header the wordmark lands around 7px.
+  `logo-horizontal.svg` sets the cup beside the type instead and stays legible.
+  `icon.svg` is likewise a reduction, not a shrink: three flags instead of five,
+  fatter poles, no drop shadow — the three things that turn to dirt at 16px.
 
 ---
 

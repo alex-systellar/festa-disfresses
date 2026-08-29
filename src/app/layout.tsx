@@ -30,11 +30,11 @@ const siteUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: "Festa de Disfresses",
+  title: "El Mundialet",
   description:
     "El sorteig et dona un país, tu hi poses la disfressa. Entra el teu correu i descobreix de què vas vestit.",
   openGraph: {
-    title: "Festa de Disfresses",
+    title: "El Mundialet",
     description: "El sorteig et dona un país, tu hi poses la disfressa.",
     locale: "ca_ES",
     type: "website",

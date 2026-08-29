@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "Festa de Disfresses";
+export const alt = "El Mundialet";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -32,19 +32,31 @@ export default function OpengraphImage() {
         >
           40 països · 1 nit · cap excusa
         </div>
+        {/* The article rides small above the name and the -et lights up, the
+            same way the wordmark is built in public/logo.svg. */}
         <div
           style={{
             display: "flex",
-            flexDirection: "column",
-            marginTop: 28,
-            fontSize: 132,
+            marginTop: 30,
+            fontSize: 40,
+            letterSpacing: 18,
+            color: "#FFC93C",
+          }}
+        >
+          EL
+        </div>
+        <div
+          style={{
+            display: "flex",
+            marginTop: 10,
+            fontSize: 150,
             fontWeight: 900,
             lineHeight: 1,
             letterSpacing: -4,
           }}
         >
-          <span>FESTA</span>
-          <span style={{ color: "#FF2E88" }}>DE DISFRESSES</span>
+          <span>MUNDIAL</span>
+          <span style={{ color: "#FFC93C" }}>ET</span>
         </div>
         <div style={{ display: "flex", marginTop: 40, fontSize: 34, color: "#FFF3E2" }}>
           El sorteig et dona un país. Tu hi poses la disfressa.

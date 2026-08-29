@@ -388,7 +388,7 @@ export default function AdminPage() {
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">Panell d&apos;administració</h1>
             <p className="mt-1 text-sm text-white/50">
-              Festa de disfresses · vista d&apos;operacions
+              El Mundialet · vista d&apos;operacions
             </p>
           </div>
 

@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* ---------------------------------------------------------------
-   Festa de Disfresses — verbena kitsch.
+   El Mundialet — verbena kitsch.
    Deep aubergine night, three loud accents, signage type.
    --------------------------------------------------------------- */
 
@@ -60,6 +60,72 @@ body {
   justify-content: safe center;
 }
 
+/* ---------------- the gate: one screenful ---------------- */
+
+/* A laptop window is ~700px tall once the browser chrome is gone, so the
+   marquee, the poster and the ticket have to share that, not stack past it.
+   Everything decorative is sized off the viewport's *height*, and from 900px
+   the poster steps aside instead of sitting on top of the ticket. */
+.gate-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+}
+
+.gate-inner {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: safe center;
+  gap: clamp(0.9rem, 3.5vh, 2.5rem);
+  width: 100%;
+  max-width: 36rem;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+  padding-block: clamp(0.75rem, 3vh, 3rem);
+}
+
+/* The RSVP and the two goodbyes are a single card at every width. */
+.gate-inner.gate-solo {
+  max-width: 30rem;
+  flex-direction: row-reverse;
+  flex-direction: column;
+}
+
+.gate-logo {
+  width: clamp(3.25rem, 11vh, 8rem);
+  height: auto;
+}
+
+/* Short screens: the cup is decoration, and the title already says the name. */
+@media (max-height: 700px) {
+  .gate-logo {
+    display: none;
+  }
+}
+
+@media (min-width: 900px) {
+  .gate-inner {
+    flex-direction: row;
+    align-items: center;
+    max-width: 64rem;
+    gap: clamp(2rem, 5vw, 4rem);
+    padding-inline: 2rem;
+  }
+
+  .gate-poster {
+    flex: 1 1 0;
+  }
+
+  .gate-poster .gate-logo {
+    margin-inline: 0;
+  }
+
+  .gate-ticket {
+    flex: 0 1 28rem;
+  }
+}
+
 /* Two soft colour blobs, pinned to the viewport so nothing ever clips content.
    On the reveal they take the country's colours. */
 .night::before {
@@ -111,7 +177,10 @@ body {
   font-family: var(--font-display);
   line-height: 0.86;
   letter-spacing: 0.01em;
-  font-size: clamp(3.4rem, 16vw, 8rem);
+  /* MUNDIALET is nine Bungee capitals (~6.6em with tracking) where FESTA was
+     five, so the old 16vw/8rem scale overflowed the viewport and the max-w-xl
+     column. Sized to fit the narrower of the two at every width. */
+  font-size: clamp(2.6rem, 12.5vw, 5.2rem);
   text-transform: uppercase;
   color: var(--color-paper);
   text-shadow:
@@ -123,6 +192,17 @@ body {
   display: block;
 }
 
+/* MUNDIALET is 6.5em of Bungee capitals, so 15% of the column is the largest
+   it can be without spilling out of it — whatever the column turns out to be.
+   The vh term is what keeps the poster from eating a short laptop screen. */
+.poster-fit {
+  container-type: inline-size;
+}
+
+.poster-fit .poster-title {
+  font-size: min(15cqi, 13vh, 5.2rem);
+}
+
 .poster-title .line-2 {
   font-size: 0.5em;
   color: var(--color-or);
@@ -131,10 +211,29 @@ body {
     0.11em 0.11em 0 rgba(0, 0, 0, 0.4);
 }
 
+/* The name is a diminutive, so the article sits small and gold above it,
+   and the -et doing the shrinking is the part that lights up. Mirrors
+   public/logo.svg exactly. */
+.poster-title .line-el {
+  font-size: 0.26em;
+  letter-spacing: 0.3em;
+  margin-bottom: 0.45em;
+  color: var(--color-or);
+  text-shadow:
+    0.055em 0.055em 0 rgba(255, 46, 136, 0.9),
+    0.11em 0.11em 0 rgba(0, 0, 0, 0.4);
+}
+
+.poster-title .tail {
+  font-style: normal;
+  color: var(--color-or);
+}
+
 /* ---------------- the ticket ---------------- */
 
 .ticket {
   position: relative;
+  padding: clamp(1.15rem, 3vh, 2rem);
   background: linear-gradient(180deg, rgba(255, 243, 226, 0.09), rgba(255, 243, 226, 0.045));
   border: 1px solid rgba(255, 243, 226, 0.2);
   border-radius: 20px;
@@ -178,6 +277,7 @@ body {
 .perf {
   border: 0;
   height: 0;
+  margin-block: clamp(0.9rem, 2.6vh, 1.5rem);
   border-top: 2px dashed rgba(255, 243, 226, 0.28);
 }
 
@@ -185,12 +285,14 @@ body {
 
 .field {
   width: 100%;
-  min-height: 3.5rem;
+  /* Never below 44px: it is still a tap target on a short phone. */
+  min-height: clamp(2.9rem, 6.4vh, 3.5rem);
   background: rgba(18, 10, 31, 0.55);
   border: 2px solid rgba(255, 243, 226, 0.22);
   border-radius: 14px;
-  padding: 1rem 1.15rem;
-  font-size: 1.25rem;
+  padding: clamp(0.55rem, 1.6vh, 1rem) 1.15rem;
+  /* Stays >=16px so iOS does not zoom the page when the field takes focus. */
+  font-size: clamp(1.05rem, 2.6vh, 1.25rem);
   line-height: 1.4;
   color: var(--color-paper);
   transition: border-color 0.18s ease, background 0.18s ease;
@@ -228,7 +330,7 @@ body {
   color: var(--color-nit);
   background: var(--color-or);
   border-radius: 999px;
-  padding: 1.2rem 1.4rem;
+  padding: clamp(0.8rem, 2.3vh, 1.2rem) 1.4rem;
   box-shadow: 0 6px 0 0 #b6801a;
   transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.2s ease;
 }

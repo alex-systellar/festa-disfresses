@@ -36,12 +36,21 @@ export function Gate({
 
       <div className="center-safe flex flex-1 flex-col gap-10 px-5 pb-12 pt-8 sm:px-8 sm:pt-12">
         <header className="rise mx-auto w-full max-w-xl">
+          {/* eslint-disable-next-line @next/next/no-img-element -- static local SVG; the optimizer does not process SVG */}
+          <img
+            src="/logo-cup.svg"
+            alt=""
+            aria-hidden="true"
+            className="mx-auto mb-6 w-24 sm:w-32"
+          />
           <p className="eyebrow">
             {COUNTRIES.length} països · 1 nit · cap excusa
           </p>
           <h1 className="poster-title mt-5">
-            <span>Festa</span>
-            <span className="line-2">de disfresses</span>
+            <span className="line-el">El</span>
+            <span>
+              Mundial<em className="tail">et</em>
+            </span>
           </h1>
         </header>
 

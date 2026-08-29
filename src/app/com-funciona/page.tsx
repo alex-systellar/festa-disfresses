@@ -3,11 +3,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Com funciona · Festa de Disfresses",
+  title: "Com funciona · El Mundialet",
   description:
     "Les normes del sorteig, la passarel·la de la nit i les quatre categories que es premien.",
   openGraph: {
-    title: "Com funciona · Festa de Disfresses",
+    title: "Com funciona · El Mundialet",
     description:
       "Les normes del sorteig, la passarel·la de la nit i les quatre categories que es premien.",
     locale: "ca_ES",
