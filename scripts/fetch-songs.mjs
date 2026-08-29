@@ -33,13 +33,7 @@ const existing = force
   ? {}
   : await fs.readFile(OUT, "utf8").then(JSON.parse, () => ({}));
 
-async function search(term) {
-  const url = new URL("https://itunes.apple.com/search");
-  url.searchParams.set("term", term);
-  url.searchParams.set("media", "music");
-  url.searchParams.set("entity", "song");
-  url.searchParams.set("limit", "10");
-
+async function request(url) {
   for (let attempt = 0; ; attempt++) {
     await sleep(THROTTLE_MS);
     const res = await fetch(url);
@@ -50,6 +44,28 @@ async function search(term) {
     console.log(`  … ${res.status}, retrying in ${waitMs / 1000}s`);
     await sleep(waitMs);
   }
+}
+
+async function search(term) {
+  const url = new URL("https://itunes.apple.com/search");
+  url.searchParams.set("term", term);
+  url.searchParams.set("media", "music");
+  url.searchParams.set("entity", "song");
+  url.searchParams.set("limit", "10");
+  return request(url);
+}
+
+/**
+ * Resolve one exact track. The search API quietly withholds some tracks —
+ * it returns 13 of the 16 on the Team America soundtrack and hides the one
+ * with the profanity, censored title and all — but lookup still serves them.
+ */
+async function lookupTrack(id) {
+  const url = new URL("https://itunes.apple.com/lookup");
+  url.searchParams.set("id", String(id));
+  url.searchParams.set("entity", "song");
+  const results = await request(url);
+  return results.find((r) => r.wrapperType === "track" && r.previewUrl) ?? null;
 }
 
 /**
@@ -88,9 +104,16 @@ for (const country of COUNTRIES) {
   }
 
   try {
-    const results = await search(country.song.search);
-    const hit = choose(results, country.song.match);
-    if (!hit) throw new Error(`no playable result matching "${country.song.match}"`);
+    const hit = country.song.id
+      ? await lookupTrack(country.song.id)
+      : choose(await search(country.song.search), country.song.match);
+    if (!hit) {
+      throw new Error(
+        country.song.id
+          ? `track ${country.song.id} has no preview`
+          : `no playable result matching "${country.song.match}"`,
+      );
+    }
 
     songs[country.code] = {
       title: hit.trackName,

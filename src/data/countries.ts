@@ -52,6 +52,14 @@ export type Country = {
      */
     match: string;
     /**
+     * Exact Apple track id, used in place of the search when set. Needed where
+     * the search API withholds a track: it returns 13 of the 16 songs on the
+     * Team America soundtrack and hides the one with the profanity in its
+     * title, censored spelling and all. `search`/`match` stay as a record of
+     * what was wanted.
+     */
+    id?: number;
+    /**
      * Seconds to skip into the preview, so playback lands on the chorus rather
      * than wherever Apple's 30s window happens to open. Read straight from
      * here by the player, so retuning one is a one-number edit with no refetch.
@@ -80,7 +88,7 @@ export const COUNTRIES: Country[] = [
     flagImage: "/flags/US.svg",
     colors: ["#B22234", "#3C3B6E"],
     anthem: { title: "The Star-Spangled Banner", source: "Star Spangled Banner instrumental.ogg" },
-    song: { search: "Take Me Home Country Roads John Denver", match: "original version" },
+    song: { search: "Team America World Police", match: "america, f**k yeah", id: 341536478 },
   },
   {
     code: "DE",
