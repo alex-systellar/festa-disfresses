@@ -269,8 +269,11 @@ function SongPreview({ code, label }: { code: string; label: string }) {
   const [playing, setPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
+  const country = getCountry(code);
   const song = getSong(code);
-  const src = song?.previewUrl ?? (getCountry(code)?.anthem.source ? `/anthems/${code}.mp3` : null);
+  const src = song?.previewUrl ?? (country?.anthem.source ? `/anthems/${code}.mp3` : null);
+  /** Same offset the guest gets, so auditioning here matches the reveal. */
+  const start = song ? (country?.song?.start ?? 0) : 0;
 
   const stop = useCallback(() => {
     audioRef.current?.pause();
@@ -316,6 +319,9 @@ function SongPreview({ code, label }: { code: string; label: string }) {
         onPlay={() => setPlaying(true)}
         onPause={() => setPlaying(false)}
         onEnded={() => setPlaying(false)}
+        onLoadedMetadata={(e) => {
+          if (start > 0) e.currentTarget.currentTime = start;
+        }}
         onError={() => setPlaying(false)}
       />
       <button

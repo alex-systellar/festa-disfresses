@@ -49,6 +49,15 @@ export type Country = {
      * the results. Without it the top hit is often a cover or a Kidz Bop version.
      */
     match: string;
+    /**
+     * Seconds to skip into the preview, so playback lands on the chorus rather
+     * than wherever Apple's 30s window happens to open. Read straight from
+     * here by the player, so retuning one is a one-number edit with no refetch.
+     *
+     * Bounded by the window: Apple chooses the excerpt, so if the chorus falls
+     * outside it no offset reaches it and the fix is a different `match`.
+     */
+    start?: number;
   };
 };
 
@@ -60,7 +69,7 @@ export const COUNTRIES: Country[] = [
     flagImage: "/flags/BR.svg",
     colors: ["#009B3A", "#FFDF00"],
     anthem: { title: "Hino Nacional Brasileiro", source: "Hino-Nacional-Brasil-instrumental-mec.ogg" },
-    song: { search: "Samba do Brasil Bellini", match: "samba do brasil — bellini" },
+    song: { search: "Samba do Brasil Bellini", match: "samba do brasil — bellini", start: 20 },
   },
   {
     code: "US",
@@ -392,7 +401,7 @@ export const COUNTRIES: Country[] = [
     flagImage: "/flags/IL.svg",
     colors: ["#0038B8", "#4A7EBB"],
     anthem: { title: "Hatikvah", source: "Hatikvah instrumental.ogg" },
-    song: { search: "Toy Netta", match: "toy — netta" },
+    song: { search: "Hava Nagila", match: "jewish starlight" },
   },
   {
     code: "CD",

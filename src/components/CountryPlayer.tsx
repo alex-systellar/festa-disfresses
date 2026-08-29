@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { getCountry } from "@/data/countries";
 import { getSong } from "@/data/songs";
 
 const DEFAULT_VOLUME = 0.5;
@@ -68,11 +69,17 @@ export function CountryPlayer({ code, anthemTitle, hasRecording, autoplay }: Cou
 
   const usingSong = Boolean(song) && !songFailed;
   const src = usingSong ? song!.previewUrl : hasRecording ? `/anthems/${code}.mp3` : null;
+  /**
+   * Where in the preview to drop the needle, so the reveal opens on the chorus.
+   * Only the song is offset — the anthem clips already start where they should.
+   */
+  const start = usingSong ? (getCountry(code)?.song?.start ?? 0) : 0;
 
   useEffect(() => {
     const el = audioRef.current;
     if (!el) return;
     el.volume = DEFAULT_VOLUME;
+    if (start > 0 && el.readyState >= 1) el.currentTime = start;
 
     if (autoplay) {
       // Rejection is expected (autoplay policy); the onPlay/onPause handlers
@@ -81,7 +88,7 @@ export function CountryPlayer({ code, anthemTitle, hasRecording, autoplay }: Cou
     }
 
     return () => el.pause();
-  }, [autoplay, code, src]);
+  }, [autoplay, code, src, start]);
 
   const toggle = useCallback(() => {
     const el = audioRef.current;
@@ -125,10 +132,18 @@ export function CountryPlayer({ code, anthemTitle, hasRecording, autoplay }: Cou
         ref={audioRef}
         src={src}
         preload="auto"
-        loop
         onPlay={() => setPlaying(true)}
         onPause={() => setPlaying(false)}
-        onEnded={() => setPlaying(false)}
+        // Looping by hand: the `loop` attribute restarts at 0, which would
+        // replay the run-up the offset exists to skip.
+        onEnded={(e) => {
+          const el = e.currentTarget;
+          el.currentTime = start;
+          void el.play().catch(() => setPlaying(false));
+        }}
+        onLoadedMetadata={(e) => {
+          if (start > 0) e.currentTarget.currentTime = start;
+        }}
         onError={handleError}
       />
 
