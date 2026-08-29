@@ -19,24 +19,16 @@ const PAGE_STYLE = { "--c1": "#FF2E88", "--c2": "#6C2BD9" } as CSSProperties;
 
 const STEPS = [
   {
-    title: "El teu nom i el teu correu",
-    body: "Res més. El nom serveix perquè qui organitza sàpiga qui és qui, i el correu per recordar-te.",
+    title: "Sorteig",
+    body: "Entra el nom i el correu, digues si hi seràs i et toca un país. Si no t'agrada en tens una segona tirada — només una, i la segona és definitiva.",
   },
   {
-    title: "Et toca un país a l'atzar",
-    body: "I és només teu: mentre quedin països lliures, ningú més de la festa pot portar el mateix.",
+    title: "Prepara la disfressa",
+    body: "És lliure: no et diem què has de portar, només de quin país vas. Tens setmanes per pensar-la, i ningú més de la festa portarà el teu país.",
   },
   {
-    title: "Una segona tirada, i prou",
-    body: "Si no t'agrada, pots tornar a tirar un sol cop. La segona és definitiva i el primer país torna al sac per a algú altre.",
-  },
-  {
-    title: "El teu país queda guardat",
-    body: "Torna quan vulguis amb el mateix correu i el tornaràs a veure, amb himne i tot.",
-  },
-  {
-    title: "Et disfresses com vulguis",
-    body: "La disfressa és lliure. No et diem què has de portar, només de quin país vas.",
+    title: "Concurs",
+    body: "El dia de la festa es desfila i es reparteixen els quatre premis. Si no recordes què t'ha tocat, torna aquí amb el mateix correu.",
   },
 ];
 
@@ -81,14 +73,43 @@ export default function ComFunciona() {
             <span className="line-2">funciona</span>
           </h1>
           <p className="mt-6 max-w-xl text-lg leading-snug text-paper/75">
-            Un país per cap, una passarel·la i quatre premis. Es llegeix en un
-            minut i et dura tota la nit.
+            A cadascú se li assigna un país aleatori, no hi ha repes i
+            (idealment) ningú sap quins toquen abans de la festa.
           </p>
         </header>
 
-        <section aria-labelledby="sorteig">
-          <h2 id="sorteig" className="section-title">
-            El sorteig
+        <section aria-labelledby="categories">
+          <h2 id="categories" className="section-title">
+            Les categories
+          </h2>
+          <p className="mt-4 max-w-xl leading-snug text-paper/70">
+            Quatre premis. Tres els decideix el jurat de la casa; l&apos;últim,
+            tothom.
+          </p>
+
+          <ul className="mt-7 grid gap-4 sm:grid-cols-2">
+            {CATEGORIES.map((category) => (
+              <li
+                key={category.name}
+                className={`cat-card ${category.public ? "cat-card-public" : ""}`}
+                style={{ "--accent": category.accent } as CSSProperties}
+              >
+                <span className="cat-rule" aria-hidden="true" />
+                <h3 className="cat-name">{category.name}</h3>
+                <p className="leading-snug text-paper/70">{category.body}</p>
+                {category.public ? (
+                  <p className="mt-1 font-mono text-[0.7rem] uppercase tracking-[0.18em] text-or">
+                    El vota tothom
+                  </p>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section aria-labelledby="ara-que">
+          <h2 id="ara-que" className="section-title">
+            I ara, què?
           </h2>
 
           <ol className="mt-7 flex flex-col gap-4">
@@ -126,35 +147,6 @@ export default function ComFunciona() {
               <span key={i} style={{ animationDelay: `${i * 0.14}s` }} />
             ))}
           </div>
-        </section>
-
-        <section aria-labelledby="categories">
-          <h2 id="categories" className="section-title">
-            Les categories
-          </h2>
-          <p className="mt-4 max-w-xl leading-snug text-paper/70">
-            Quatre premis. Tres els decideix el jurat de la casa; l&apos;últim,
-            tothom.
-          </p>
-
-          <ul className="mt-7 grid gap-4 sm:grid-cols-2">
-            {CATEGORIES.map((category) => (
-              <li
-                key={category.name}
-                className={`cat-card ${category.public ? "cat-card-public" : ""}`}
-                style={{ "--accent": category.accent } as CSSProperties}
-              >
-                <span className="cat-rule" aria-hidden="true" />
-                <h3 className="cat-name">{category.name}</h3>
-                <p className="leading-snug text-paper/70">{category.body}</p>
-                {category.public ? (
-                  <p className="mt-1 font-mono text-[0.7rem] uppercase tracking-[0.18em] text-or">
-                    El vota tothom
-                  </p>
-                ) : null}
-              </li>
-            ))}
-          </ul>
         </section>
 
         <footer className="flex flex-col items-center gap-4 text-center">

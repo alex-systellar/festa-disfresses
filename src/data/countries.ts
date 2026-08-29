@@ -45,8 +45,10 @@ export type Country = {
     /** Free-text query. Hand-written: "a famous song from <country>" finds library music. */
     search: string;
     /**
-     * Lowercased substring matched against "<track> — <artist>" to pick from
-     * the results. Without it the top hit is often a cover or a Kidz Bop version.
+     * Lowercased substring matched against "<track> — <artist> — <album>" to
+     * pick from the results. Without it the top hit is often a cover or a Kidz
+     * Bop version; the album disambiguates releases of the same recording,
+     * which matters because each gets its own 30s window.
      */
     match: string;
     /**
@@ -132,7 +134,7 @@ export const COUNTRIES: Country[] = [
     flagImage: "/flags/IT.svg",
     colors: ["#008C45", "#CD212A"],
     anthem: { title: "Il Canto degli Italiani", source: "Inno di Mameli instrumental.ogg" },
-    song: { search: "Parlami damore Mariu", match: "achille togliani" },
+    song: { search: "Il Mondo Jimmy Fontana", match: "grandi interpreti italiani" },
   },
   {
     code: "ES",

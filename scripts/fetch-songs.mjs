@@ -56,12 +56,19 @@ async function search(term) {
  * The top hit is regularly a cover, a live take or a Kidz Bop version, so the
  * seed's `match` picks from the list. Only results with a preview qualify —
  * a hit without one is useless to the player.
+ *
+ * The album is part of the haystack because Apple cuts a different 30s window
+ * per release: eight identical-looking "Il mondo — Jimmy Fontana" rows open in
+ * eight different places, and the album name is the only thing telling them
+ * apart.
  */
 function choose(results, match) {
   const playable = results.filter((r) => r.previewUrl);
   const needle = match.toLowerCase();
   return (
-    playable.find((r) => `${r.trackName} — ${r.artistName}`.toLowerCase().includes(needle)) ?? null
+    playable.find((r) =>
+      `${r.trackName} — ${r.artistName} — ${r.collectionName}`.toLowerCase().includes(needle),
+    ) ?? null
   );
 }
 
