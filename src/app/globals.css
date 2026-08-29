@@ -86,6 +86,10 @@ body {
 }
 
 /* The RSVP and the two goodbyes are a single card at every width. */
+.gate-inner .ticket {
+  padding: clamp(1.15rem, 3vh, 2rem);
+}
+
 .gate-inner.gate-solo {
   max-width: 30rem;
   flex-direction: column;
@@ -236,7 +240,6 @@ body {
 
 .ticket {
   position: relative;
-  padding: clamp(1.15rem, 3vh, 2rem);
   background: linear-gradient(180deg, rgba(255, 243, 226, 0.09), rgba(255, 243, 226, 0.045));
   border: 1px solid rgba(255, 243, 226, 0.2);
   border-radius: 20px;
