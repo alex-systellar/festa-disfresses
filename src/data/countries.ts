@@ -321,7 +321,7 @@ export const COUNTRIES: Country[] = [
     flagImage: "/flags/PE.svg",
     colors: ["#D91023", "#FFFFFF"],
     anthem: { title: "Himno Nacional del Perú", source: "United States Navy Band - Marcha Nacional del Perú.ogg" },
-    song: { search: "Wendy Sulca Mi Tetita", match: "la tetita — wendy", start: 15 },
+    song: { search: "Wendy Sulca Mi Tetita", match: "la tetita — wendy", start: 20 },
   },
   {
     code: "TH",
