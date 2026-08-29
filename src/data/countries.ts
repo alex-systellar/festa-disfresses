@@ -87,7 +87,7 @@ export const COUNTRIES: Country[] = [
     flagImage: "/flags/DE.svg",
     colors: ["#000000", "#DD0000"],
     anthem: { title: "Das Lied der Deutschen", source: "National anthem of Germany - U.S. Army 1st Armored Division Band.ogg" },
-    song: { search: "99 Luftballons Nena", match: "99 luftballons" },
+    song: { search: "Erika auf der Heide", match: "lustigen vagabunden" },
   },
   {
     code: "AT",
@@ -141,7 +141,7 @@ export const COUNTRIES: Country[] = [
     flagImage: "/flags/ES.svg",
     colors: ["#AA151B", "#F1BF00"],
     anthem: { title: "Marcha Real", source: "Marcha Real-Royal March by US Navy Band.ogg" },
-    song: { search: "Macarena Los del Rio", match: "original version" },
+    song: { search: "Cara al Sol remix", match: "stormxx" },
   },
   {
     code: "GB",

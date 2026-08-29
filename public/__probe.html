@@ -1,26 +1,31 @@
 <!doctype html><meta charset="utf-8">
-<style>body{background:#111;color:#eee;font:17px/1.5 ui-monospace,monospace;margin:0;padding:12px}
-iframe{border:1px solid #444;width:880px;height:260px}</style>
+<style>body{background:#111;color:#eee;font:16px/1.5 ui-monospace,monospace;margin:0;padding:12px}
+iframe{border:1px solid #444;width:860px;height:150px}</style>
 <pre id="out">starting…</pre>
 <iframe id="f"></iframe>
 <script>
 const q = new URLSearchParams(location.search);
 const out = document.getElementById("out"), f = document.getElementById("f");
-localStorage.setItem("festa-disfresses:admin-key", q.get("k") || "");
+const key = q.get("k") || "";
+localStorage.setItem("festa-disfresses:admin-key", key);
+let api = "pending";
+fetch("/api/admin?key=" + encodeURIComponent(key), { cache: "no-store" })
+  .then(r => { api = "HTTP " + r.status; return r.text(); })
+  .then(t => { api += " · " + t.slice(0, 60); })
+  .catch(e => { api = "threw: " + e.message; });
 f.src = "/admin";
 let n = 0;
 const tick = () => {
   n++;
   const d = f.contentDocument;
-  const pw = d && d.querySelector('input[type=password]');
-  const dash = d && d.querySelector("table");
-  const h = d && d.querySelector("h1");
+  const src = d ? [...d.querySelectorAll("script")].length : 0;
   out.textContent =
     "poll #" + n +
-    "\nstored key   : " + (localStorage.getItem("festa-disfresses:admin-key") ? "present" : "MISSING") +
-    "\nkey form     : " + (pw ? "showing (NOT auto-logged-in)" : "absent") +
-    "\ndashboard    : " + (dash ? "RENDERED (auto-login worked)" : "not rendered") +
-    "\nheading      : " + (h ? h.textContent : "-");
+    "\nstored key : " + (localStorage.getItem("festa-disfresses:admin-key") ? "present" : "MISSING") +
+    "\napi direct : " + api +
+    "\nkey form   : " + (d && d.querySelector('input[type=password]') ? "showing" : "absent") +
+    "\ndashboard  : " + (d && d.querySelector("table") ? "RENDERED" : "no") +
+    "\nerror text : " + (d && d.querySelector('[class*="red-"], [class*="amber-"]') ? d.querySelector('[class*="red-"], [class*="amber-"]').textContent.slice(0,70) : "-");
   if (n < 40) setTimeout(tick, 250);
 };
 setTimeout(tick, 300);
