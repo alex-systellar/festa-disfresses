@@ -10,7 +10,7 @@ const FAREWELL_STYLE = { "--c1": "#6C2BD9", "--c2": "#26D9C3" } as CSSProperties
 type FarewellProps = {
   /** `no` closes the door politely; `maybe` leaves it open. */
   kind: "no" | "maybe";
-  /** Back to the question, with the answer still changeable. */
+  /** Back to the question: both answers are changed the same way. */
   onReconsider: () => void;
   /** Wrong guest: clears the stored email and returns to the gate. */
   onReset: () => void;
@@ -21,13 +21,11 @@ const COPY = {
     eyebrow: "Resposta rebuda",
     title: "Bon vent i barca nova",
     body: "Cap problema. Aquesta nit no hi haurà cap país amb el teu nom, i el que t'hauria tocat se'l quedarà algú altre.",
-    action: "M'ho he repensat",
   },
   maybe: {
     eyebrow: "Ho deixem en l'aire",
     title: "Torna quan ho sàpigues",
     body: "No et guardem cap país: es reparteixen per ordre d'arribada i s'acaben. Quan ho tinguis clar, torna i tira.",
-    action: "Ja ho sé: hi seré",
   },
 } as const;
 
@@ -48,7 +46,7 @@ export function Farewell({ kind, onReconsider, onReset }: FarewellProps) {
 
           <div className="mx-auto mt-7 flex w-full max-w-xs flex-col gap-3">
             <button type="button" onClick={onReconsider} className="btn-festa">
-              {copy.action}
+              M&apos;ho he repensat
             </button>
             <button type="button" onClick={onReset} className="btn-outline">
               No sóc jo · canviar correu

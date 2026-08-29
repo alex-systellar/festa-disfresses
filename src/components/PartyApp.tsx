@@ -400,12 +400,7 @@ export function PartyApp() {
     return (
       <Farewell
         kind={phase === "declined" ? "no" : "maybe"}
-        // A "maybe" that comes back is a yes: draw straight away rather than
-        // asking the same question twice.
-        onReconsider={() => {
-          if (phase === "maybe") handleAnswer("yes");
-          else setPhase("rsvp");
-        }}
+        onReconsider={() => setPhase("rsvp")}
         onReset={handleReset}
       />
     );
