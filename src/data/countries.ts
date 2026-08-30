@@ -69,6 +69,25 @@ export type Country = {
      */
     start?: number;
   };
+  /**
+   * The left-hand dancer on the reveal: a country-specific sticker, resolved
+   * by `scripts/fetch-dances.mjs`. The right-hand one is drawn from the shared
+   * meme pool instead, so every country gets one of its own and one of theirs.
+   *
+   * A `search` with no sticker results falls back to the pool — Giphy's
+   * sticker library is far smaller than its GIF library and simply has nothing
+   * for some terms. The script reports every country that falls back.
+   */
+  dance?: {
+    /** Giphy sticker search. Ignored when `id` is set. */
+    search?: string;
+    /**
+     * Exact Giphy id, for a hand-picked one. Note that ids from a GIF search
+     * are not stickers: they carry a solid background and will not sit on the
+     * plinth the way the cut-out ones do.
+     */
+    id?: string;
+  };
 };
 
 export const COUNTRIES: Country[] = [
@@ -80,6 +99,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#009B3A", "#FFDF00"],
     anthem: { title: "Hino Nacional Brasileiro", source: "Hino-Nacional-Brasil-instrumental-mec.ogg" },
     song: { search: "Samba do Brasil Bellini", match: "samba do brasil — bellini", start: 20 },
+    dance: { id: "I68aFoxhyjrRm" },
   },
   {
     code: "US",
@@ -89,6 +109,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#B22234", "#3C3B6E"],
     anthem: { title: "The Star-Spangled Banner", source: "Star Spangled Banner instrumental.ogg" },
     song: { search: "Free Bird Lynyrd Skynyrd", match: "pronounced leh-nerd skin-nerd", start: 15 },
+    dance: { search: "american dance" },
   },
   {
     code: "DE",
@@ -98,6 +119,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#000000", "#DD0000"],
     anthem: { title: "Das Lied der Deutschen", source: "National anthem of Germany - U.S. Army 1st Armored Division Band.ogg" },
     song: { search: "Wir singen und marschieren Soldatenlieder", match: "major hans friess", start: 20 },
+    dance: { search: "german dance" },
   },
   {
     code: "AT",
@@ -107,6 +129,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#ED2939", "#FFFFFF"],
     anthem: { title: "Land der Berge, Land am Strome", source: "Land der Berge Land am Strome instrumental.ogg" },
     song: { search: "Anton aus Tirol DJ Otzi", match: "anton aus tirol — anton" },
+    dance: { search: "oktoberfest dance" },
   },
   {
     code: "MX",
@@ -116,6 +139,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#006847", "#CE1126"],
     anthem: { title: "Himno Nacional Mexicano", source: "Himno Nacional Mexicano instrumental.ogg" },
     song: { search: "La Chona Los Tucanes de Tijuana", match: "la chona" },
+    dance: { search: "mexican dance" },
   },
   {
     code: "JP",
@@ -125,6 +149,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#BC002D", "#FFFFFF"],
     anthem: { title: "Kimigayo", source: "Kimi ga Yo instrumental.ogg" },
     song: { search: "Renai Circulation Kana Hanazawa", match: "monogatari" },
+    dance: { search: "anime dance" },
   },
   {
     code: "FR",
@@ -134,6 +159,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#0055A4", "#EF4135"],
     anthem: { title: "La Marseillaise", source: "La Marseillaise.ogg" },
     song: { search: "Non je ne regrette rien Edith Piaf", match: "the best of édith piaf" },
+    dance: { search: "french dance" },
   },
   {
     code: "IT",
@@ -143,6 +169,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#008C45", "#CD212A"],
     anthem: { title: "Il Canto degli Italiani", source: "Inno di Mameli instrumental.ogg" },
     song: { search: "Il Mondo Jimmy Fontana", match: "i grandi successi originali" },
+    dance: { search: "italian dance" },
   },
   {
     code: "ES",
@@ -152,6 +179,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#AA151B", "#F1BF00"],
     anthem: { title: "Marcha Real", source: "Marcha Real-Royal March by US Navy Band.ogg" },
     song: { search: "Cara al Sol remix", match: "stormxx" },
+    dance: { search: "flamenco dance" },
   },
   {
     code: "GB",
@@ -161,6 +189,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#012169", "#C8102E"],
     anthem: { title: "God Save the King", source: "United States Navy Band - God Save the Queen.oga" },
     song: { search: "Never Gonna Give You Up Rick Astley", match: "rick astley" },
+    dance: { search: "british dance" },
   },
   {
     code: "IN",
@@ -170,6 +199,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#FF9933", "#138808"],
     anthem: { title: "Jana Gana Mana", source: "Jana Gana Mana instrumental.ogg" },
     song: { search: "Mundian To Bach Ke Panjabi MC", match: "mundian to bach ke — panjabi mc" },
+    dance: { search: "bollywood dance" },
   },
   {
     code: "CN",
@@ -179,6 +209,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#DE2910", "#FFDE00"],
     anthem: { title: "March of the Volunteers", source: "March of the Volunteers instrumental.ogg" },
     song: { search: "Yi Jian Mei Fei Yu-Ching", match: "xue hua piao piao" },
+    dance: { search: "chinese dance" },
   },
   {
     code: "RU",
@@ -188,6 +219,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#0039A6", "#D52B1E"],
     anthem: { title: "Himne de la Federació Russa", source: "Russian Anthem chorus.ogg" },
     song: { search: "Hymne National de LUrss Alexandrov Ensemble", match: "soviet national anthem" },
+    dance: { search: "russian dance" },
   },
   {
     code: "CA",
@@ -197,6 +229,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#FF0000", "#FFFFFF"],
     anthem: { title: "O Canada", source: "United States Navy Band - O Canada.ogg" },
     song: { search: "Let's Go to the Mall Robin Sparkles", match: "robin sparkles" },
+    dance: { search: "canada dance" },
   },
   {
     code: "AU",
@@ -206,6 +239,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#00247D", "#FFFFFF"],
     anthem: { title: "Advance Australia Fair", source: "Advance Australia Fair (1927).ogg" },
     song: { search: "Down Under Men at Work", match: "down under — men at work" },
+    dance: { search: "australia dance" },
   },
   {
     code: "JM",
@@ -215,6 +249,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#009B3A", "#FED100"],
     anthem: { title: "Jamaica, Land We Love", source: '"Jamaica, Land We Love", performed by the United States Navy Band.oga' },
     song: { search: "Could You Be Loved Bob Marley", match: "could you be loved — bob" },
+    dance: { search: "reggae dance" },
   },
   {
     code: "NL",
@@ -224,6 +259,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#AE1C28", "#21468B"],
     anthem: { title: "Het Wilhelmus", source: "Wilhelmus koor.oga" },
     song: { search: "Boom Boom Boom Boom Vengaboys", match: "vengaboys" },
+    dance: { search: "dutch dance" },
   },
   {
     code: "SE",
@@ -233,6 +269,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#006AA7", "#FECC00"],
     anthem: { title: "Du gamla, du fria", source: "Du gamla, du fria.ogg" },
     song: { search: "Dancing Queen ABBA", match: "dancing queen — abba" },
+    dance: { search: "swedish dance" },
   },
   {
     code: "NO",
@@ -242,6 +279,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#BA0C2F", "#00205B"],
     anthem: { title: "Ja, vi elsker dette landet", source: "Norway (National Anthem).ogg" },
     song: { search: "The Fox What Does the Fox Say Ylvis", match: "ylvis" },
+    dance: { search: "norway dance" },
   },
   {
     code: "GR",
@@ -251,6 +289,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#0D5EAF", "#FFFFFF"],
     anthem: { title: "Hymn to Liberty", source: "Hymn to liberty instrumental.oga" },
     song: { search: "Zorba the Greek Sirtaki Theodorakis", match: "theodorakis", start: 20 },
+    dance: { search: "greek dance" },
   },
   {
     code: "EG",
@@ -260,6 +299,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#CE1126", "#C09300"],
     anthem: { title: "Bilady, Bilady, Bilady", source: "Bilady, Bilady, Bilady.ogg" },
     song: { search: "Nour El Ain Amr Diab habibi", match: "noor al ain — amr diab" },
+    dance: { search: "arab dance" },
   },
   {
     code: "AR",
@@ -269,6 +309,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#75AADB", "#FCBF49"],
     anthem: { title: "Himno Nacional Argentino", source: "Himno Nacional Argentino instrumental.ogg" },
     song: { search: "Muchachos ahora nos volvimos a ilusionar", match: "la mosca" },
+    dance: { search: "tango dance" },
   },
   {
     code: "CU",
@@ -278,6 +319,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#002A8F", "#CF142B"],
     anthem: { title: "La Bayamesa", source: "La Bayamesa (1945).ogg" },
     song: { search: "El meu avi", match: "el meu avi — los manolos" },
+    dance: { search: "salsa dance" },
   },
   {
     code: "CH",
@@ -287,6 +329,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#D52B1E", "#FFFFFF"],
     anthem: { title: "Schweizerpsalm", source: "Swiss Psalm.ogg" },
     song: { search: "Chihuahua DJ BoBo", match: "chihuahua — dj bobo" },
+    dance: { search: "swiss dance" },
   },
   {
     code: "IE",
@@ -296,6 +339,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#169B62", "#FF883E"],
     anthem: { title: "Amhrán na bhFiann", source: "Ireland National Anthem (Amhrán na bhFiann) 1960s.ogg" },
     song: { search: "Drunken Sailor Irish Rovers", match: "drunken sailor — the irish rovers" },
+    dance: { search: "irish dance" },
   },
   {
     code: "KR",
@@ -305,6 +349,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#003478", "#C60C30"],
     anthem: { title: "Aegukga", source: "National anthem of South Korea, performed by the United States Navy Band.wav" },
     song: { search: "Gangnam Style PSY", match: "gangnam style — psy" },
+    dance: { search: "kpop dance" },
   },
   {
     code: "TR",
@@ -314,6 +359,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#E30A17", "#FFFFFF"],
     anthem: { title: "İstiklâl Marşı", source: "Istiklâl Marsi instrumetal.ogg" },
     song: { search: "Simarik Tarkan", match: "tarkan" },
+    dance: { search: "turkish dance" },
   },
   {
     code: "MA",
@@ -323,6 +369,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#C1272D", "#006233"],
     anthem: { title: "Hymne Chérifien", source: "National Anthem of Morocco.ogg" },
     song: { search: "Lm3allem Saad Lamjarred", match: "lamaallem" },
+    dance: { search: "arab dance" },
   },
   {
     code: "PE",
@@ -332,6 +379,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#D91023", "#FFFFFF"],
     anthem: { title: "Himno Nacional del Perú", source: "United States Navy Band - Marcha Nacional del Perú.ogg" },
     song: { search: "Wendy Sulca Mi Tetita", match: "la tetita — wendy", start: 20 },
+    dance: { search: "peruvian dance" },
   },
   {
     code: "TH",
@@ -341,6 +389,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#A51931", "#2D2A4A"],
     anthem: { title: "Phleng Chat Thai", source: "Thai National Anthem - US Navy Band.ogg" },
     song: { search: "Made in Thailand Carabao", match: "carabao" },
+    dance: { search: "thai dance" },
   },
   {
     code: "PT",
@@ -350,6 +399,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#006600", "#FF0000"],
     anthem: { title: "A Portuguesa", source: "A Portuguesa - Banda do Batalhão da Guarda Presidencial, 2025.ogg" },
     song: { search: "A Cabritinha Quim Barreiros", match: "cabritinha" },
+    dance: { search: "portuguese dance" },
   },
   {
     code: "CO",
@@ -359,6 +409,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#FCD116", "#003893"],
     anthem: { title: "¡Oh, gloria inmarcesible!", source: "United States Navy Band - ¡Oh, gloria inmarcesible!.ogg" },
     song: { search: "Hips Don't Lie Shakira", match: "wyclef jean) — shakira", start: 5 },
+    dance: { search: "cumbia dance" },
   },
   {
     code: "CT",
@@ -367,6 +418,7 @@ export const COUNTRIES: Country[] = [
     flagImage: "/flags/CT.svg",
     colors: ["#FCDD09", "#DA121A"],
     anthem: { title: "Els Segadors", source: "Els Segadors.ogg" },
+    dance: { search: "catalan dance" },
   },
   {
     code: "EC",
@@ -376,6 +428,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#FFDD00", "#0072CE"],
     anthem: { title: "¡Salve, Oh Patria!", source: "Anthem of Ecuador.ogg" },
     song: { search: "Nuestro Juramento Julio Jaramillo", match: "nuestro juramento — julio" },
+    dance: { search: "ecuador dance" },
   },
   {
     code: "KP",
@@ -385,6 +438,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#024FA2", "#ED1C27"],
     anthem: { title: "Aegukka" },
     song: { search: "Arirang Korean folk song", match: "arirang" },
+    dance: { search: "korean dance" },
   },
   {
     code: "VA",
@@ -394,6 +448,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#FFE000", "#C9A227"],
     anthem: { title: "Inno e Marcia Pontificale", source: "United States Navy Band - Inno e Marcia Pontificale.ogg" },
     song: { search: "Ave Maria Gregorian chant", match: "christ the king choir" },
+    dance: { search: "pope dance" },
   },
   {
     code: "AF",
@@ -403,6 +458,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#007A36", "#D32011"],
     anthem: { title: "Milli Surood", source: "National Anthem of Afghanistan (Instrumental).ogg" },
     song: { search: "Ahmad Zahir", match: "tanha shudam" },
+    dance: { search: "afghan dance" },
   },
   {
     code: "IL",
@@ -412,6 +468,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#0038B8", "#4A7EBB"],
     anthem: { title: "Hatikvah", source: "Hatikvah instrumental.ogg" },
     song: { search: "Hava Nagila", match: "jewish starlight" },
+    dance: { search: "jewish dance" },
   },
   {
     code: "CD",
@@ -421,6 +478,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#007FFF", "#F7D618"],
     anthem: { title: "Debout Congolais", source: "Debout Congolais.ogg" },
     song: { search: "Bana Congo", match: "dj max star" },
+    dance: { search: "african dance" },
   },
   {
     code: "MN",
@@ -430,6 +488,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#C4272F", "#015197"],
     anthem: { title: "Mongol Ulsyn töriin duulal" },
     song: { search: "Yuve Yuve Yu The HU", match: "yuve yuve yu (live" },
+    dance: { search: "mongolia dance" },
   },
   {
     code: "KZ",
@@ -442,6 +501,7 @@ export const COUNTRIES: Country[] = [
       source: "Kazakhstan national anthem, played by the U.S. Navy Band.ogg",
     },
     song: { search: "Borat Erran Baron Cohen", match: "o kazakhstan" },
+    dance: { search: "kazakh dance" },
   },
 ];
 

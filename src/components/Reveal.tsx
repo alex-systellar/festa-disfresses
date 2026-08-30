@@ -110,7 +110,7 @@ export function Reveal({
         </div>
 
         <div className="dance-row">
-          <Dancer code={country.code} index={0} />
+          <Dancer code={country.code} side="left" />
           <div className="anthem-stub">
             <CountryPlayer
               key={country.code}
@@ -120,7 +120,7 @@ export function Reveal({
               autoplay={!calm}
             />
           </div>
-          <Dancer code={country.code} index={1} />
+          <Dancer code={country.code} side="right" />
         </div>
 
         <footer className="mt-5 flex w-full flex-col items-center gap-2 text-center">

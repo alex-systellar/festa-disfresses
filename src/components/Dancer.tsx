@@ -3,8 +3,8 @@ import { getDancers } from "@/data/dances";
 type DancerProps = {
   /** Which country's pair to draw from. */
   code: string;
-  /** 0 is the left dancer, 1 the right. */
-  index: 0 | 1;
+  /** Left is the country's own sticker; right comes from the shared pool. */
+  side: "left" | "right";
 };
 
 /**
@@ -14,10 +14,10 @@ type DancerProps = {
  * Renders nothing until `npm run dances` has filled dances.json, so the reveal
  * degrades to exactly what it was before rather than to a broken image.
  */
-export function Dancer({ code, index }: DancerProps) {
+export function Dancer({ code, side }: DancerProps) {
   const pair = getDancers(code);
   if (!pair) return null;
-  const dance = pair[index];
+  const dance = pair[side];
 
   return (
     <picture>
@@ -33,7 +33,7 @@ export function Dancer({ code, index }: DancerProps) {
         height={dance.height}
         loading="lazy"
         decoding="async"
-        className={`dancer dancer-${index === 0 ? "left" : "right"}`}
+        className={`dancer dancer-${side}`}
       />
     </picture>
   );

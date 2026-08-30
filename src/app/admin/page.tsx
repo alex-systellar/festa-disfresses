@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 
-import { getCountry } from "@/data/countries";
-import { ALL_DANCES } from "@/data/dances";
+import { COUNTRIES, getCountry } from "@/data/countries";
+import { BY_COUNTRY, POOL } from "@/data/dances";
 import { getSong } from "@/data/songs";
 
 /* ---------------------------------- types --------------------------------- */
@@ -1204,9 +1204,9 @@ export default function AdminPage() {
 
         <section className="pb-10">
           <h2 className="mb-2 text-xs uppercase tracking-widest text-white/40">
-            Balladors ({ALL_DANCES.length})
+            Ballador propi per país ({Object.keys(BY_COUNTRY).length}/{COUNTRIES.length})
           </h2>
-          {ALL_DANCES.length === 0 ? (
+          {POOL.length === 0 ? (
             <p className="rounded-lg border border-white/10 px-3 py-4 text-sm text-white/40">
               Cap ballador. Posa GIPHY_API_KEY a .env.local i executa{" "}
               <code className="font-mono text-white/60">npm run dances</code>.
@@ -1214,13 +1214,50 @@ export default function AdminPage() {
           ) : (
             <>
               <ul className="grid grid-cols-3 gap-1.5 sm:grid-cols-5 lg:grid-cols-8">
-                {ALL_DANCES.map((d, i) => (
+                {COUNTRIES.map((c) => {
+                  const d = BY_COUNTRY[c.code];
+                  return (
+                    <li
+                      key={c.code}
+                      className="flex flex-col items-center gap-1 rounded-md border border-white/10 bg-white/[0.03] p-2"
+                      title={d ? d.title : "sense ballador propi — surt del fons comú"}
+                    >
+                      {d ? (
+                        // eslint-disable-next-line @next/next/no-img-element -- animated WebP on Giphy's CDN; next/image would need a remotePatterns entry and `unoptimized` to keep the animation, for no gain
+                        <img
+                          src={d.src}
+                          alt=""
+                          loading="lazy"
+                          decoding="async"
+                          className="h-20 w-auto max-w-full object-contain"
+                        />
+                      ) : (
+                        <span className="flex h-20 items-center text-[10px] text-white/25">
+                          fons comú
+                        </span>
+                      )}
+                      <span className="font-mono text-[10px] text-white/40">{c.code}</span>
+                      {d && !d.transparent ? (
+                        <span className="font-mono text-[9px] uppercase text-amber-300/70">
+                          opac
+                        </span>
+                      ) : null}
+                    </li>
+                  );
+                })}
+              </ul>
+
+              <h2 className="mt-6 mb-2 text-xs uppercase tracking-widest text-white/40">
+                Fons comú ({POOL.length}) — el ballador de la dreta
+              </h2>
+              <ul className="grid grid-cols-3 gap-1.5 sm:grid-cols-5 lg:grid-cols-8">
+                {POOL.map((d, i) => (
                   <li
                     key={d.id}
                     className="flex flex-col items-center gap-1 rounded-md border border-white/10 bg-white/[0.03] p-2"
                     title={d.title}
                   >
-                    {/* Lazy: 94 animated WebPs would be a lot to pull at once. */}
+                    {/* Lazy: every sticker on the page at once is a lot to pull. */}
                     {/* eslint-disable-next-line @next/next/no-img-element -- animated WebP on Giphy's CDN; next/image would need a remotePatterns entry and `unoptimized` to keep the animation, for no gain */}
                     <img
                       src={d.src}
