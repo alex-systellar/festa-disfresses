@@ -179,7 +179,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#AA151B", "#F1BF00"],
     anthem: { title: "Marcha Real", source: "Marcha Real-Royal March by US Navy Band.ogg" },
     song: { search: "Cara al Sol remix", match: "stormxx" },
-    dance: { search: "flamenco" },
+    dance: { id: "q7xc4EvfVleSOkfrwX" },
   },
   {
     code: "GB",
