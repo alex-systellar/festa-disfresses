@@ -289,10 +289,10 @@ body {
    * would stretch a narrow dancer into a streak and squash a wide one — and
    * the two sides would not match each other.
    */
-  height: clamp(4.5rem, 11vh, 9rem);
+  height: clamp(8rem, 24vh, 18rem);
   width: auto;
   /* Guard against the widest stickers crowding the player off-centre. */
-  max-width: clamp(5rem, 13vw, 10rem);
+  max-width: clamp(9rem, 24vw, 20rem);
   object-fit: contain;
   /* The stickers are cut out, so a shadow keeps them from looking pasted on. */
   filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.45));
@@ -306,10 +306,12 @@ body {
 }
 
 /*
- * Narrow screens give the player the whole width: two 4rem dancers either side
- * of a 34rem stub leaves the transport button and the track title fighting.
+ * Narrow screens give the player the whole width. The threshold rises with the
+ * dancers: two 9rem-wide stickers either side of a 34rem stub want a good deal
+ * more room than the small ones did, and below this they win it by squeezing
+ * the transport button and the track title.
  */
-@media (max-width: 46rem) {
+@media (max-width: 58rem) {
   .dancer {
     display: none;
   }
