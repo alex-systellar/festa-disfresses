@@ -72,7 +72,7 @@ const MUST_HAVE = [
  * the first one blocked here is called "Happy Cheer Up Sticker" — so rejects
  * are recorded by id, from looking at the contact sheet in /admin.
  */
-const BLOCKED = new Set(["IwZ4nbKj3EnNLNNtu8"]);
+const BLOCKED = new Set(["IwZ4nbKj3EnNLNNtu8", "BOGOB95CQOLzh9KaNU"]);
 const PER_QUERY = 25;
 const RATING = "pg-13";
 const THROTTLE_MS = 150;
