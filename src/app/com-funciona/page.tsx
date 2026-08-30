@@ -20,7 +20,7 @@ const PAGE_STYLE = { "--c1": "#FF2E88", "--c2": "#6C2BD9" } as CSSProperties;
 const STEPS = [
   {
     title: "Sorteig",
-    body: "Entra el nom i el correu, fes RSPV i et tocarà un país. Si no t'agrada tens una segona tirada però la segona és definitiva.",
+    body: "Posa el nom i el correu, fes RSPV i et tocarà un país. Si no t'agrada tens una segona tirada però la segona és definitiva.",
   },
   {
     title: "Prepara la disfressa",
@@ -28,32 +28,32 @@ const STEPS = [
   },
   {
     title: "Concurs",
-    body: "El dia de la festa es desfila i es reparteixen els quatre premis. Si no recordes què t'ha tocat, torna aquí amb el mateix correu.",
+    body: "El dia de la festa es desfila i es reparteixen els quatre premis. Si no recordes què t'ha tocat, torna aquí amb el mateix correu per veure-ho.",
   },
 ];
 
 const CATEGORIES = [
   {
     name: "Més sexy",
-    body: "Glamur, posat i seguretat. Aquí guanya qui se la creu més, no qui ensenya més.",
+    body: "Dels creadors de `calabaza putilla` arriba `Afghanistan putilla`, la disfressa més sexy del middle east!",
     accent: "#FF2E88",
     public: false,
   },
   {
     name: "Més divertida",
-    body: "La que fa riure tota la sala abans d'arribar al final de la passarel·la.",
+    body: "No necessita descripció.",
     accent: "#26D9C3",
     public: false,
   },
   {
     name: "Més original",
-    body: "La idea que ningú no havia vist venir. Punts extra per l'enginy casolà.",
+    body: "Artesanal, atrevit, diferent sempre estàs dos moves per davant de tothom.",
     accent: "#7C5CFF",
     public: false,
   },
   {
     name: "Premi del públic",
-    body: "Aquest no el decideix cap jurat: el vota tothom qui hi és, a crits i aplaudiments.",
+    body: "Simplement el millor, no cal discutir-ho",
     accent: "#FFC93C",
     public: true,
   },
