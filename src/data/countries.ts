@@ -309,7 +309,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#75AADB", "#FCBF49"],
     anthem: { title: "Himno Nacional Argentino", source: "Himno Nacional Argentino instrumental.ogg" },
     song: { search: "Muchachos ahora nos volvimos a ilusionar", match: "la mosca" },
-    dance: { search: "tango dance" },
+    dance: { id: "TjAcxImn74uoDYVxFl" },
   },
   {
     code: "CU",
@@ -339,7 +339,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#169B62", "#FF883E"],
     anthem: { title: "Amhrán na bhFiann", source: "Ireland National Anthem (Amhrán na bhFiann) 1960s.ogg" },
     song: { search: "Drunken Sailor Irish Rovers", match: "drunken sailor — the irish rovers" },
-    dance: { search: "riverdance" },
+    dance: { id: "Xkah2x6x8daAzzzqCZ" },
   },
   {
     code: "KR",
@@ -468,7 +468,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#0038B8", "#4A7EBB"],
     anthem: { title: "Hatikvah", source: "Hatikvah instrumental.ogg" },
     song: { search: "Hava Nagila", match: "jewish starlight" },
-    dance: { search: "hora jewish dance" },
+    dance: { id: "BJvOi54vJJmQqyMTef" },
   },
   {
     code: "CD",
@@ -501,7 +501,7 @@ export const COUNTRIES: Country[] = [
       source: "Kazakhstan national anthem, played by the U.S. Navy Band.ogg",
     },
     song: { search: "Borat Erran Baron Cohen", match: "o kazakhstan" },
-    dance: { search: "borat dance" },
+    dance: { id: "Od0QRnzwRBYmDU3eEO" },
   },
 ];
 

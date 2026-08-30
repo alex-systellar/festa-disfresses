@@ -1338,7 +1338,7 @@
       "width": 260,
       "height": 200,
       "pageUrl": "https://giphy.com/gifs/john-lists-candy-gX8F8kMRTx44M",
-      "transparent": false
+      "transparent": true
     },
     {
       "id": "8m4R4pvViWtRzbloJ1",
@@ -1348,7 +1348,7 @@
       "width": 166,
       "height": 200,
       "pageUrl": "https://giphy.com/gifs/dancing-kermit-8m4R4pvViWtRzbloJ1",
-      "transparent": false
+      "transparent": true
     },
     {
       "id": "QsZol42CPIjMzke1QW",
@@ -1358,7 +1358,7 @@
       "width": 200,
       "height": 200,
       "pageUrl": "https://giphy.com/gifs/moodman-QsZol42CPIjMzke1QW",
-      "transparent": false
+      "transparent": true
     },
     {
       "id": "uMo2qtslcUgEJwCo44",
@@ -1368,7 +1368,7 @@
       "width": 248,
       "height": 200,
       "pageUrl": "https://giphy.com/gifs/meme-wtf-donald-duck-uMo2qtslcUgEJwCo44",
-      "transparent": false
+      "transparent": true
     },
     {
       "id": "NAWrgyZHMI6npwVa2d",
@@ -1388,7 +1388,7 @@
       "width": 266,
       "height": 200,
       "pageUrl": "https://giphy.com/gifs/life-gets-down-olAik8MhYOB9K",
-      "transparent": false
+      "transparent": true
     },
     {
       "id": "x5lIgu2DDtI5IzdtUg",
@@ -1410,7 +1410,7 @@
       "width": 100,
       "height": 200,
       "pageUrl": "https://giphy.com/gifs/football-neymar-I68aFoxhyjrRm",
-      "transparent": false
+      "transparent": true
     },
     "US": {
       "id": "FbiL9rsmZN3ib2JSGo",
@@ -1420,7 +1420,7 @@
       "width": 356,
       "height": 200,
       "pageUrl": "https://giphy.com/gifs/dechinezen-dance-trump-donald-FbiL9rsmZN3ib2JSGo",
-      "transparent": false
+      "transparent": true
     },
     "DE": {
       "id": "mzSoAtg0cPTpzOIKsM",
@@ -1490,7 +1490,7 @@
       "width": 358,
       "height": 200,
       "pageUrl": "https://giphy.com/gifs/wbitvpspain-q7xc4EvfVleSOkfrwX",
-      "transparent": false
+      "transparent": true
     },
     "GB": {
       "id": "gkp4am6alSmSFNEYri",
@@ -1500,7 +1500,7 @@
       "width": 160,
       "height": 200,
       "pageUrl": "https://giphy.com/gifs/mr-bean-meme-bombastic-funny-dance-gkp4am6alSmSFNEYri",
-      "transparent": false
+      "transparent": true
     },
     "IN": {
       "id": "LrY3EaYA3ZAQcKkmwI",
@@ -1520,7 +1520,7 @@
       "width": 200,
       "height": 200,
       "pageUrl": "https://giphy.com/gifs/trump-china-0wAsZOZAzl587vGZdS",
-      "transparent": false
+      "transparent": true
     },
     "RU": {
       "id": "kBZigzPJHRsfbsGKGp",
@@ -1613,13 +1613,13 @@
       "transparent": true
     },
     "AR": {
-      "id": "U5Ivkja8l6jsgdxtCb",
-      "title": "Cha Cha Cha Swing Sticker by Social Dance TV",
-      "src": "https://media1.giphy.com/media/v1.Y2lkPTE4NTgzNDUybTQzZzlxZ3BidnlzazFoM2I3Z2JzeWR5NnlkbzE5aTQ4dW5nazkxYyZlcD12MV9zdGlja2Vyc19zZWFyY2gmY3Q9cw/U5Ivkja8l6jsgdxtCb/200.webp",
-      "still": "https://media1.giphy.com/media/v1.Y2lkPTE4NTgzNDUybTQzZzlxZ3BidnlzazFoM2I3Z2JzeWR5NnlkbzE5aTQ4dW5nazkxYyZlcD12MV9zdGlja2Vyc19zZWFyY2gmY3Q9cw/U5Ivkja8l6jsgdxtCb/200_s.gif",
+      "id": "TjAcxImn74uoDYVxFl",
+      "title": "Lionel Messi Football GIF by FC Barcelona",
+      "src": "https://media0.giphy.com/media/v1.Y2lkPTE4NTgzNDUydDlzdWo4Y2h0bXpkbGd6ajQ2dWI3eW9rbDF0ejBoNDBvYXZyMWkyOSZlcD12MV9naWZzX2dpZklkJmN0PWc/TjAcxImn74uoDYVxFl/200.webp",
+      "still": "https://media0.giphy.com/media/v1.Y2lkPTE4NTgzNDUydDlzdWo4Y2h0bXpkbGd6ajQ2dWI3eW9rbDF0ejBoNDBvYXZyMWkyOSZlcD12MV9naWZzX2dpZklkJmN0PWc/TjAcxImn74uoDYVxFl/200_s.gif",
       "width": 200,
       "height": 200,
-      "pageUrl": "https://giphy.com/stickers/dance-social-tv-U5Ivkja8l6jsgdxtCb",
+      "pageUrl": "https://giphy.com/gifs/fcbarcelona-goat-messi-leo-TjAcxImn74uoDYVxFl",
       "transparent": true
     },
     "CU": {
@@ -1633,13 +1633,13 @@
       "transparent": true
     },
     "IE": {
-      "id": "f5LXS8yc344DXphoFz",
-      "title": "River Dance Sticker by AEG Presents",
-      "src": "https://media3.giphy.com/media/v1.Y2lkPTE4NTgzNDUydWR2cHFwNTR0ZHJmdmUxNmE3YnhhNTkxYmN3YzBvMWpuMDZnb25yYyZlcD12MV9zdGlja2Vyc19zZWFyY2gmY3Q9cw/f5LXS8yc344DXphoFz/200.webp",
-      "still": "https://media3.giphy.com/media/v1.Y2lkPTE4NTgzNDUydWR2cHFwNTR0ZHJmdmUxNmE3YnhhNTkxYmN3YzBvMWpuMDZnb25yYyZlcD12MV9zdGlja2Vyc19zZWFyY2gmY3Q9cw/f5LXS8yc344DXphoFz/200_s.gif",
-      "width": 200,
+      "id": "Xkah2x6x8daAzzzqCZ",
+      "title": "Season 6 Nbc GIF by The Office",
+      "src": "https://media0.giphy.com/media/v1.Y2lkPTE4NTgzNDUyb25raGt5c2tjOHFxaWhhZDI2NHh6MXNydDkwbXJ1Mm9scjgxa3l2byZlcD12MV9naWZzX2dpZklkJmN0PWc/Xkah2x6x8daAzzzqCZ/200.webp",
+      "still": "https://media0.giphy.com/media/v1.Y2lkPTE4NTgzNDUyb25raGt5c2tjOHFxaWhhZDI2NHh6MXNydDkwbXJ1Mm9scjgxa3l2byZlcD12MV9naWZzX2dpZklkJmN0PWc/Xkah2x6x8daAzzzqCZ/200_s.gif",
+      "width": 240,
       "height": 200,
-      "pageUrl": "https://giphy.com/stickers/aegpresents-transparent-riverdance-river-dance-f5LXS8yc344DXphoFz",
+      "pageUrl": "https://giphy.com/gifs/theoffice-the-office-tv-st-patricks-day-Xkah2x6x8daAzzzqCZ",
       "transparent": true
     },
     "KR": {
@@ -1722,6 +1722,16 @@
       "pageUrl": "https://giphy.com/stickers/brazil-pope-priest-3YE0gCrEe3aKE6iRla",
       "transparent": true
     },
+    "IL": {
+      "id": "BJvOi54vJJmQqyMTef",
+      "title": "Jew GIF",
+      "src": "https://media0.giphy.com/media/v1.Y2lkPTE4NTgzNDUydDZzeHJzMnF5YWI2YnY4eG9lYnp1c3NlbmUzeGNrMDQwMTNuMGgwcCZlcD12MV9naWZzX2dpZklkJmN0PWc/BJvOi54vJJmQqyMTef/200.webp",
+      "still": "https://media0.giphy.com/media/v1.Y2lkPTE4NTgzNDUydDZzeHJzMnF5YWI2YnY4eG9lYnp1c3NlbmUzeGNrMDQwMTNuMGgwcCZlcD12MV9naWZzX2dpZklkJmN0PWc/BJvOi54vJJmQqyMTef/200_s.gif",
+      "width": 200,
+      "height": 200,
+      "pageUrl": "https://giphy.com/gifs/jew-BJvOi54vJJmQqyMTef",
+      "transparent": true
+    },
     "MN": {
       "id": "rK0UfFJ8QEJedmmrVc",
       "title": "Vini Jr GIF",
@@ -1730,16 +1740,16 @@
       "width": 300,
       "height": 200,
       "pageUrl": "https://giphy.com/gifs/brasil-football-flag-vinicius-jr-mongolia-vs-mongolian-army-rK0UfFJ8QEJedmmrVc",
-      "transparent": false
+      "transparent": true
     },
     "KZ": {
-      "id": "W2if3gOB6RiVnUo1BE",
-      "title": "Dance Dancing Sticker by Fierybay",
-      "src": "https://media1.giphy.com/media/v1.Y2lkPTE4NTgzNDUyeXlib2xmMGdlODA4ZnNtZGs0bmd4aTFhNzRlMHJsbHN0aWxkNW11ciZlcD12MV9zdGlja2Vyc19zZWFyY2gmY3Q9cw/W2if3gOB6RiVnUo1BE/200.webp",
-      "still": "https://media1.giphy.com/media/v1.Y2lkPTE4NTgzNDUyeXlib2xmMGdlODA4ZnNtZGs0bmd4aTFhNzRlMHJsbHN0aWxkNW11ciZlcD12MV9zdGlja2Vyc19zZWFyY2gmY3Q9cw/W2if3gOB6RiVnUo1BE/200_s.gif",
-      "width": 356,
+      "id": "Od0QRnzwRBYmDU3eEO",
+      "title": "Sacha Baron Cohen Thumbs Up GIF by Amazon Prime Video",
+      "src": "https://media3.giphy.com/media/v1.Y2lkPTE4NTgzNDUyZDFzenljOGpvNXljOGsweHF5OTRhMnYwYnB0ODVwMTVjbGEwM2VpNyZlcD12MV9naWZzX2dpZklkJmN0PWc/Od0QRnzwRBYmDU3eEO/200.webp",
+      "still": "https://media3.giphy.com/media/v1.Y2lkPTE4NTgzNDUyZDFzenljOGpvNXljOGsweHF5OTRhMnYwYnB0ODVwMTVjbGEwM2VpNyZlcD12MV9naWZzX2dpZklkJmN0PWc/Od0QRnzwRBYmDU3eEO/200_s.gif",
+      "width": 200,
       "height": 200,
-      "pageUrl": "https://giphy.com/stickers/dance-celebrate-poolparty-W2if3gOB6RiVnUo1BE",
+      "pageUrl": "https://giphy.com/gifs/primevideo-2020-borat-subsequent-moviefilm-Od0QRnzwRBYmDU3eEO",
       "transparent": true
     }
   }

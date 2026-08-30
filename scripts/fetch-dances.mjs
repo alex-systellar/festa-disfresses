@@ -127,9 +127,40 @@ function shape(item) {
     height: Number(frame.height) || 200,
     // Giphy's terms want the sticker clickable back to its page.
     pageUrl: item.url,
-    /** False for a pinned GIF: it carries a solid background, not alpha. */
+    /**
+     * Provisional: Giphy's own classification. A GIF outside the sticker
+     * library can still carry alpha, so `measureAlpha` corrects this below by
+     * reading the file rather than trusting the label.
+     */
     transparent: item.is_sticker === 1 || item.is_sticker === true,
   };
+}
+
+/**
+ * Whether a WebP actually carries an alpha channel.
+ *
+ * Giphy's `is_sticker` is a shelf, not a fact about the pixels: a hand-picked
+ * GIF can be perfectly cut out and still sit outside the sticker library. The
+ * VP8X header says so definitively, and it lives in the first few dozen bytes,
+ * so one ranged request settles it.
+ */
+async function measureAlpha(url) {
+  try {
+    const res = await fetch(url, { headers: { range: "bytes=0-63" } });
+    if (!res.ok && res.status !== 206) return null;
+    const b = Buffer.from(await res.arrayBuffer());
+    if (b.length < 20 || b.toString("ascii", 0, 4) !== "RIFF") return null;
+    let off = 12;
+    while (off + 8 <= b.length) {
+      const fourcc = b.toString("ascii", off, off + 4);
+      if (fourcc === "VP8X") return Boolean(b[off + 8] & 0x10);
+      if (fourcc === "ALPH") return true;
+      off += 8 + b.readUInt32LE(off + 4);
+    }
+    return null;
+  } catch {
+    return null;
+  }
 }
 
 async function api(pathname, params) {
@@ -244,6 +275,22 @@ for (const country of COUNTRIES) {
     fellBack.push(`${country.code} (${err.message})`);
   }
 }
+
+/*
+ * Anything still marked opaque gets checked for real. Only these are fetched:
+ * the sticker library is transparent by definition, so this is a handful of
+ * ranged requests over the hand-picked GIFs, not a pass over the whole pool.
+ */
+let corrected = 0;
+for (const entry of [...pool, ...Object.values(byCountry)]) {
+  if (entry.transparent) continue;
+  const alpha = await measureAlpha(entry.src);
+  if (alpha === true) {
+    entry.transparent = true;
+    corrected++;
+  }
+}
+if (corrected) console.log(`· ${corrected} marked opaque actually carry alpha`);
 
 await fs.writeFile(OUT, JSON.stringify({ pool, byCountry }, null, 2) + "\n", "utf8");
 
