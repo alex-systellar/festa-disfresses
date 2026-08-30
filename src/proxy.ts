@@ -14,6 +14,14 @@ const COUNTDOWN_PATH = "/aviat";
  */
 const ALLOWED = ["/com-funciona", "/admin", "/api/admin"];
 
+/**
+ * Metadata routes answer even while the gate is up. A link shared during the
+ * countdown previews from `/opengraph-image` (and `/aviat/opengraph-image`),
+ * and those have no file extension for the matcher to skip — rewriting them
+ * hands WhatsApp an HTML page where it asked for a poster.
+ */
+const METADATA = /\/(opengraph-image|twitter-image)(-[\w-]+)?(\/|$)/;
+
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -25,7 +33,9 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  if (pathname === COUNTDOWN_PATH) return NextResponse.next();
+  if (pathname === COUNTDOWN_PATH || METADATA.test(pathname)) {
+    return NextResponse.next();
+  }
   if (ALLOWED.some((base) => pathname === base || pathname.startsWith(`${base}/`))) {
     return NextResponse.next();
   }
