@@ -358,7 +358,7 @@ export const COUNTRIES: Country[] = [
     flagImage: "/flags/CO.svg",
     colors: ["#FCD116", "#003893"],
     anthem: { title: "¡Oh, gloria inmarcesible!", source: "United States Navy Band - ¡Oh, gloria inmarcesible!.ogg" },
-    song: { search: "Hips Don't Lie Shakira", match: "wyclef jean) — shakira" },
+    song: { search: "Hips Don't Lie Shakira", match: "wyclef jean) — shakira", start: 5 },
   },
   {
     code: "CT",
