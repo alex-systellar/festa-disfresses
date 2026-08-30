@@ -72,10 +72,16 @@ export default function ComFunciona() {
             <span>Com</span>
             <span className="line-2">funciona</span>
           </h1>
-          <p className="mt-6 max-w-xl text-lg leading-snug text-paper/75">
-            A cadascú se li assigna un país aleatori, no hi ha repes i
-            (idealment) ningú sap quins toquen abans de la festa.
-          </p>
+          {/* Three sentences, three paragraphs. JSX folds the blank lines of a
+              single block into spaces, so the breaks have to be real elements. */}
+          <div className="mt-6 flex max-w-xl flex-col gap-4 text-lg leading-snug text-paper/75">
+            <p>Farem un concurs de disfresses com cada any.</p>
+            <p>Aquest any la temàtica és 🌈 països 🌈.</p>
+            <p>
+              A cadascú se li assigna un país aleatori, no hi ha repes i
+              (idealment) ningú sap quins toquen abans de la festa.
+            </p>
+          </div>
         </header>
 
         <section aria-labelledby="categories">
