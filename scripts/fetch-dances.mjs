@@ -32,8 +32,47 @@ import { fileURLToPath } from "node:url";
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const OUT = path.join(ROOT, "src", "data", "dances.json");
 
-/** Searches feeding the shared pool. Meme-leaning: generic "dancing" was bland. */
-const QUERIES = ["dance meme", "dancing meme", "meme dance", "funny dance meme"];
+/**
+ * Searches feeding the shared pool. Spread wide on purpose: the near-synonym
+ * meme queries overlapped so heavily that three of them added almost nothing,
+ * and what they did agree on was the dancing banana.
+ */
+const QUERIES = [
+  "dance meme",
+  "funny dance",
+  "silly dance move",
+  "celebration dance",
+  "excited dance",
+  "groovy dance",
+];
+
+/**
+ * Titles to refuse. A waving flag is not a dancer; Giphy's dance-meme shelf is
+ * thick with dancing bananas; and the cartoon-animal end of it reads as a
+ * children's party rather than this one.
+ */
+const REJECT =
+  /\b(flag|banana|dog|puppy|cat|kitten|baby|kids?|child|nursery|goose|bear|bunny|duck|toddler|teddy|panda|unicorn)\b/i;
+
+/**
+ * Stickers pinned into the pool by hand, fetched by id. These come first, so
+ * they survive a refetch and cannot be crowded out by whatever search returns.
+ */
+const MUST_HAVE = [
+  "gX8F8kMRTx44M",
+  "8m4R4pvViWtRzbloJ1",
+  "QsZol42CPIjMzke1QW",
+  "uMo2qtslcUgEJwCo44",
+  "NAWrgyZHMI6npwVa2d",
+  "olAik8MhYOB9K",
+];
+
+/**
+ * Ids kept out of the pool. Titles are close to useless for judging these —
+ * the first one blocked here is called "Happy Cheer Up Sticker" — so rejects
+ * are recorded by id, from looking at the contact sheet in /admin.
+ */
+const BLOCKED = new Set(["IwZ4nbKj3EnNLNNtu8"]);
 const PER_QUERY = 25;
 const RATING = "pg-13";
 const THROTTLE_MS = 150;
@@ -61,10 +100,14 @@ const key = await loadKey();
 const { COUNTRIES } = await import(path.join(ROOT, "src/data/countries.ts"));
 
 const existing = await fs.readFile(OUT, "utf8").then(JSON.parse, () => null);
-if (existing?.pool?.length && !force) {
-  console.log(`· already populated — pass --force to refetch.`);
-  process.exit(0);
-}
+
+/*
+ * Default is a top-up, not a refetch. Pruning the blocklist costs nothing, and
+ * fetching only what is missing costs a handful of requests — where a full
+ * rebuild costs about fifty and Giphy's free quota is hourly. --force still
+ * rebuilds from scratch when the queries themselves have changed.
+ */
+const topUp = Boolean(existing?.pool?.length) && !force;
 
 /**
  * fixed_height is ~200px tall: plenty beside the player, a fraction of the
@@ -89,31 +132,63 @@ function shape(item) {
 }
 
 async function api(pathname, params) {
-  await sleep(THROTTLE_MS);
   const url = new URL(`https://api.giphy.com/v1/${pathname}`);
   url.searchParams.set("api_key", key);
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, String(v));
-  const res = await fetch(url);
-  if (!res.ok) {
+
+  for (let attempt = 0; ; attempt++) {
+    await sleep(THROTTLE_MS);
+    const res = await fetch(url);
+    if (res.ok) return (await res.json()).data;
     if (res.status === 401 || res.status === 403) {
       console.error(`\nGiphy rejected the key (HTTP ${res.status}).`);
       process.exit(1);
     }
-    throw new Error(`HTTP ${res.status}`);
+    // The free quota is hourly, so a 429 is worth a short wait but not a long
+    // one — past a couple of tries the answer is to come back later.
+    if (res.status !== 429 || attempt >= 2) throw new Error(`HTTP ${res.status}`);
+    const waitMs = 5000 * 2 ** attempt;
+    console.log(`  … rate limited, retrying in ${waitMs / 1000}s`);
+    await sleep(waitMs);
   }
-  return (await res.json()).data;
 }
 
 /* ------------------------------- the pool -------------------------------- */
 
 const seen = new Set();
 const pool = [];
-for (const q of QUERIES) {
+
+if (topUp) {
+  // Pruning needs no network: the filters have usually moved on since the
+  // pool was built, and this is what applies them to what is already there.
+  const kept = existing.pool.filter((d) => !BLOCKED.has(d.id) && !REJECT.test(d.title));
+  const dropped = existing.pool.length - kept.length;
+  for (const d of kept) {
+    seen.add(d.id);
+    pool.push(d);
+  }
+  console.log(`· topping up ${kept.length} kept${dropped ? `, ${dropped} pruned` : ""}`);
+}
+
+for (const id of MUST_HAVE) {
+  if (seen.has(id)) continue;
+  try {
+    const d = shape(await api(`gifs/${id}`, {}));
+    if (!d) throw new Error("no usable frame");
+    seen.add(d.id);
+    pool.push(d);
+    console.log(`✓ pinned ${id} — ${d.title}${d.transparent ? "" : "  [opaque GIF]"}`);
+  } catch (err) {
+    console.error(`✗ pinned ${id} — ${err.message}`);
+  }
+}
+
+for (const q of topUp ? [] : QUERIES) {
   try {
     let added = 0;
     for (const item of (await api("stickers/search", { q, limit: PER_QUERY, rating: RATING })) ?? []) {
       const d = shape(item);
-      if (!d || seen.has(d.id)) continue;
+      if (!d || seen.has(d.id) || BLOCKED.has(d.id) || REJECT.test(d.title)) continue;
       seen.add(d.id);
       pool.push(d);
       added++;
@@ -137,13 +212,24 @@ const fellBack = [];
 for (const country of COUNTRIES) {
   const seed = country.dance;
   if (!seed) continue;
+
+  const stored = topUp ? existing.byCountry?.[country.code] : null;
+  // A pinned id that already matches needs no request; neither does a search
+  // whose answer is already on disk.
+  if (stored && (seed.id ? stored.id === seed.id : true)) {
+    byCountry[country.code] = stored;
+    continue;
+  }
+
   try {
     let item = null;
     if (seed.id) {
       item = await api(`gifs/${seed.id}`, {});
     } else {
-      const results = (await api("stickers/search", { q: seed.search, limit: 5, rating: RATING })) ?? [];
-      item = results[0] ?? null;
+      const results = (await api("stickers/search", { q: seed.search, limit: 15, rating: RATING })) ?? [];
+      // Taking results[0] blindly is what put a waving flag on half the
+      // countries; skip anything the filter refuses before settling.
+      item = results.find((r) => !REJECT.test(r.title ?? "")) ?? null;
     }
     const d = item ? shape(item) : null;
     if (!d) {
