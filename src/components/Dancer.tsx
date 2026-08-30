@@ -1,8 +1,13 @@
-import { getDancers } from "@/data/dances";
+import { getDance, getDancers } from "@/data/dances";
 
 type DancerProps = {
-  /** Which country's pair to draw from. */
-  code: string;
+  /** Which country's pair to draw from. Ignored when `id` is given. */
+  code?: string;
+  /**
+   * A specific sticker, pinned by Giphy id. The countdown picks its own rather
+   * than deriving a pair from a country, since it belongs to no country.
+   */
+  id?: string;
   /** Left is the country's own sticker; right comes from the shared pool. */
   side: "left" | "right";
 };
@@ -14,10 +19,9 @@ type DancerProps = {
  * Renders nothing until `npm run dances` has filled dances.json, so the reveal
  * degrades to exactly what it was before rather than to a broken image.
  */
-export function Dancer({ code, side }: DancerProps) {
-  const pair = getDancers(code);
-  if (!pair) return null;
-  const dance = pair[side];
+export function Dancer({ code, id, side }: DancerProps) {
+  const dance = id ? getDance(id) : code ? getDancers(code)?.[side] : null;
+  if (!dance) return null;
 
   return (
     <picture>

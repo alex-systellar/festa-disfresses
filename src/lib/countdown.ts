@@ -28,3 +28,26 @@ export function isLocked(now: number = Date.now()): boolean {
   const target = countdownTarget();
   return target !== null && now < target.getTime();
 }
+
+export type Remaining = {
+  days: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
+};
+
+/**
+ * The gap to the opening, split into units. Lives here rather than in the
+ * component so the server can render the real figures into the HTML and the
+ * client can start from them — a clock whose first paint is a row of dashes
+ * looks broken for exactly as long as anyone is looking at it.
+ */
+export function remainingUntil(target: number, now: number = Date.now()): Remaining {
+  const total = Math.floor(Math.max(0, target - now) / 1000);
+  return {
+    days: Math.floor(total / 86400),
+    hours: Math.floor((total % 86400) / 3600),
+    minutes: Math.floor((total % 3600) / 60),
+    seconds: total % 60,
+  };
+}

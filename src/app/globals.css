@@ -530,6 +530,96 @@ body {
   }
 }
 
+/* ---------------- the countdown board (the gate before the gate) ---------------- */
+
+.aviat-inner {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: safe center;
+  align-items: center;
+  gap: clamp(1rem, 4vh, 2.25rem);
+  width: 100%;
+  max-width: 52rem;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+  padding-block: clamp(1rem, 4vh, 3rem);
+  text-align: center;
+}
+
+/* Same card, same hinge, same flap as the sorteig above: the countdown is
+   visibly that machine, waiting to be run. */
+.clock {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: clamp(0.4rem, 2vw, 1rem);
+}
+
+.clock-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(0.5rem, 1.4vh, 0.85rem);
+}
+
+.clock-card {
+  position: relative;
+  display: grid;
+  place-items: center;
+  /* Floored wide enough for SEGONS underneath, the widest of the four labels. */
+  min-width: clamp(3.9rem, 15vw, 6.5rem);
+  padding: clamp(0.5rem, 2vh, 1rem) clamp(0.35rem, 1.5vw, 0.75rem);
+  border-radius: 14px;
+  background: linear-gradient(180deg, #241338 0%, #150b25 48%, #1d1030 52%, #100819 100%);
+  border: 2px solid rgba(255, 243, 226, 0.16);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 243, 226, 0.14),
+    0 24px 50px -26px #000;
+  overflow: hidden;
+}
+
+/* The hinge, straight across the digits — the whole point of a split flap. */
+.clock-card::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 2px;
+  background: rgba(0, 0, 0, 0.55);
+  box-shadow: 0 1px 0 rgba(255, 243, 226, 0.08);
+}
+
+.clock-digits {
+  display: block;
+  font-family: var(--font-display);
+  font-size: clamp(1.9rem, 8vw, 4rem);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-or);
+  text-shadow:
+    0.05em 0.05em 0 var(--color-magenta),
+    0.1em 0.1em 0 rgba(0, 0, 0, 0.45);
+  transform-origin: center top;
+  animation: flap-in 0.16s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+/* The eyebrow's 0.34em tracking is far too wide to sit under a card this
+   narrow, so the labels get their own tighter setting. */
+.clock-label {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255, 243, 226, 0.55);
+}
+
+/* Zero: the board is gone and the only thing left on the page is the way in. */
+.clock-open {
+  font-size: clamp(2.25rem, 10vw, 4.5rem);
+}
+
 /* ---------------- reveal ---------------- */
 
 /* The flag sits on a ring of its own flag colours: saturated at the edge,

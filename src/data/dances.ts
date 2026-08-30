@@ -60,3 +60,15 @@ export function getDancers(code: string): { left: Dance; right: Dance } | null {
     right: POOL[rightIndex],
   };
 }
+
+/**
+ * One specific sticker, by Giphy id. For a page that pins its own dancer
+ * rather than deriving a pair from a country code.
+ *
+ * Only the pool is searched: an id worth pinning belongs in `MUST_HAVE` in
+ * `scripts/fetch-dances.mjs`, which is what puts it there and keeps it there
+ * across a top-up.
+ */
+export function getDance(id: string): Dance | null {
+  return POOL.find((d) => d.id === id) ?? null;
+}
