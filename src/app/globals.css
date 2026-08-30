@@ -283,8 +283,17 @@ body {
 
 .dancer {
   flex: 0 0 auto;
-  width: clamp(4rem, 9vw, 7.5rem);
-  height: auto;
+  /*
+   * Height, not width. Giphy's fixed_height stickers are all exactly 200px
+   * tall but anywhere from 92 to 356 wide, so constraining the width instead
+   * would stretch a narrow dancer into a streak and squash a wide one — and
+   * the two sides would not match each other.
+   */
+  height: clamp(4.5rem, 11vh, 9rem);
+  width: auto;
+  /* Guard against the widest stickers crowding the player off-centre. */
+  max-width: clamp(5rem, 13vw, 10rem);
+  object-fit: contain;
   /* The stickers are cut out, so a shadow keeps them from looking pasted on. */
   filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.45));
   -webkit-user-select: none;
