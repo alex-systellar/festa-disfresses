@@ -389,7 +389,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#A51931", "#2D2A4A"],
     anthem: { title: "Phleng Chat Thai", source: "Thai National Anthem - US Navy Band.ogg" },
     song: { search: "Made in Thailand Carabao", match: "carabao" },
-    dance: { search: "thai traditional dance" },
+    dance: { id: "xUNd9R26axe6d9qZig" },
   },
   {
     code: "PT",
