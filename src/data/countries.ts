@@ -209,7 +209,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#DE2910", "#FFDE00"],
     anthem: { title: "March of the Volunteers", source: "March of the Volunteers instrumental.ogg" },
     song: { search: "Yi Jian Mei Fei Yu-Ching", match: "xue hua piao piao" },
-    dance: { search: "dragon dance" },
+    dance: { id: "0wAsZOZAzl587vGZdS" },
   },
   {
     code: "RU",
