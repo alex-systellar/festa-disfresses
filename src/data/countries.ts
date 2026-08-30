@@ -109,7 +109,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#B22234", "#3C3B6E"],
     anthem: { title: "The Star-Spangled Banner", source: "Star Spangled Banner instrumental.ogg" },
     song: { search: "Free Bird Lynyrd Skynyrd", match: "pronounced leh-nerd skin-nerd", start: 15 },
-    dance: { search: "uncle sam dance" },
+    dance: { id: "trRIlTkVxBuMzSWxbT" },
   },
   {
     code: "DE",

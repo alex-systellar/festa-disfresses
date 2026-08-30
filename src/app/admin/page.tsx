@@ -2,6 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 
+import { createPortal } from "react-dom";
+
+import { Reveal } from "@/components/Reveal";
+import type { ClaimResult } from "@/components/PartyApp";
 import { COUNTRIES, getCountry } from "@/data/countries";
 import { BY_COUNTRY, POOL } from "@/data/dances";
 import { getSong } from "@/data/songs";
@@ -266,6 +270,84 @@ let stopPlayingPreview: (() => void) | null = null;
  * from Apple, and the committed anthem mp3 otherwise. Renders nothing for a
  * country with neither.
  */
+/**
+ * Opens the reveal exactly as a guest gets it — same component, same confetti,
+ * same autoplay — rather than a lookalike that could drift from the real one.
+ */
+/**
+ * The reveal, full screen, over the dashboard. Renders the real component with
+ * a stand-in claim rather than a copy of it, so what shows here cannot drift
+ * from what a guest gets — confetti, autoplay and all.
+ *
+ * `calm` is false on purpose: opening this is a click, which is the gesture
+ * the browser wants before it will let the song play.
+ */
+function SorteigOverlay({
+  code,
+  remaining,
+  onClose,
+}: {
+  code: string;
+  remaining: number;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  const country = getCountry(code);
+  if (!country) return null;
+
+  const result: ClaimResult = {
+    country,
+    name: "Convidat/da",
+    isNew: true,
+    duplicate: false,
+    canReroll: true,
+    remaining,
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 overflow-auto bg-nit">
+      <button
+        type="button"
+        onClick={onClose}
+        className="fixed right-4 top-4 z-10 rounded-full border-2 border-paper/30 bg-nit/70 px-4 py-2 font-mono text-xs uppercase tracking-widest text-paper backdrop-blur transition hover:border-turquesa hover:text-turquesa"
+      >
+        Tanca · esc
+      </button>
+      <Reveal
+        result={result}
+        calm={false}
+        onReroll={() => {}}
+        onReset={onClose}
+        rerollError={null}
+      />
+    </div>
+  );
+}
+
+function SorteigPreview({ label, onOpen }: { label: string; onOpen: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      title={`Simula el sorteig de ${label}`}
+      aria-label={`Simula el sorteig de ${label}`}
+      className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/5 text-white/60 opacity-0 transition hover:border-fuchsia-400/60 hover:text-fuchsia-300 focus-visible:opacity-100 focus-visible:outline-1 focus-visible:outline-offset-1 focus-visible:outline-white/40 group-hover:opacity-100"
+    >
+      <svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor" aria-hidden="true" className="block">
+        {/* An eye: this shows the thing, it does not hand a country out. */}
+        <path d="M12 5c-5 0-8.5 4.4-9.4 5.7a1.5 1.5 0 0 0 0 1.7C3.5 13.6 7 18 12 18s8.5-4.4 9.4-5.6a1.5 1.5 0 0 0 0-1.7C20.5 9.4 17 5 12 5zm0 10.2a3.7 3.7 0 1 1 0-7.4 3.7 3.7 0 0 1 0 7.4z" />
+      </svg>
+    </button>
+  );
+}
+
 function SongPreview({ code, label }: { code: string; label: string }) {
   const [playing, setPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -507,6 +589,8 @@ export default function AdminPage() {
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [lastLoadedAt, setLastLoadedAt] = useState<number | null>(null);
   /** Which destructive action the dialog is asking about. null = closed. */
+  /** Country code whose reveal is being previewed, or null. */
+  const [previewCode, setPreviewCode] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -1021,6 +1105,10 @@ export default function AdminPage() {
                           <span className="ml-1.5 font-mono text-[11px] text-white/30">{a.code}</span>
                           <span className="ml-1.5 align-[-4px]">
                             <SongPreview code={a.code} label={a.country} />
+                            <SorteigPreview
+                              label={a.country}
+                              onOpen={() => setPreviewCode(a.code)}
+                            />
                           </span>
                           {a.rerolled ? (
                             <span
@@ -1195,6 +1283,7 @@ export default function AdminPage() {
                   <Flag src={c.flagImage} alt={c.name} />
                   <span className="truncate">{c.name}</span>
                   <SongPreview code={c.code} label={c.name} />
+                  <SorteigPreview label={c.name} onOpen={() => setPreviewCode(c.code)} />
                   <span className="ml-auto font-mono text-[11px] text-white/30">{c.code}</span>
                 </li>
               ))}
@@ -1279,6 +1368,17 @@ export default function AdminPage() {
         </section>
 
       </div>
+
+      {previewCode && typeof document !== "undefined"
+        ? createPortal(
+            <SorteigOverlay
+              code={previewCode}
+              remaining={data?.remaining.length ?? 0}
+              onClose={() => setPreviewCode(null)}
+            />,
+            document.body,
+          )
+        : null}
 
       {pendingDelete ? (
         <ConfirmDelete
