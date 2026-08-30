@@ -267,6 +267,18 @@ async function readBlobStore(): Promise<Snapshot> {
   return { data: parse(raw), version: result.blob.etag };
 }
 
+/**
+ * ETags come back as weak validators — `W/"abc…"` — and If-Match is defined to
+ * use strong comparison (RFC 7232 section 3.1), so a weak one can never match.
+ * Handing the raw value to `ifMatch` failed every conditional write, forever,
+ * rather than only under contention: five retries read the same weak tag and
+ * failed identically, and the caller reported a conflict that no amount of
+ * retrying could clear.
+ */
+function strongETag(version: string): string {
+  return version.replace(/^W\//, "");
+}
+
 async function writeBlobStore(data: StoreData, expectedVersion: string | null): Promise<void> {
   const { put, BlobPreconditionFailedError } = await import("@vercel/blob");
   try {
@@ -278,13 +290,17 @@ async function writeBlobStore(data: StoreData, expectedVersion: string | null): 
       // With a version: write only if the document is still the one we read.
       // Without: this is the first write, so refuse to clobber a blob another
       // instance created in the meantime.
-      ...(expectedVersion ? { ifMatch: expectedVersion } : { allowOverwrite: false }),
+      ...(expectedVersion
+        ? { ifMatch: strongETag(expectedVersion) }
+        : { allowOverwrite: false }),
     });
   } catch (err) {
     if (err instanceof BlobPreconditionFailedError) {
       // A real race: someone wrote between our read and this put. Retrying
       // against their data is the right answer, and usually works.
-      throw new ConflictError(`blob changed since read (ifMatch ${expectedVersion})`);
+      throw new ConflictError(
+        `blob changed since read (ifMatch ${strongETag(expectedVersion ?? "")})`,
+      );
     }
     // The create path races as "already exists" rather than a precondition.
     if (!expectedVersion && err instanceof Error && /exists/i.test(err.message)) {
