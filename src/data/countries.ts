@@ -133,7 +133,7 @@ export const COUNTRIES: Country[] = [
     flagImage: "/flags/FR.svg",
     colors: ["#0055A4", "#EF4135"],
     anthem: { title: "La Marseillaise", source: "La Marseillaise.ogg" },
-    song: { search: "Alexandrie Alexandra Claude Francois", match: "alexandrie alexandra — claude" },
+    song: { search: "Non je ne regrette rien Edith Piaf", match: "the best of édith piaf" },
   },
   {
     code: "IT",
