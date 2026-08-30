@@ -369,7 +369,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#C1272D", "#006233"],
     anthem: { title: "Hymne Chérifien", source: "National Anthem of Morocco.ogg" },
     song: { search: "Lm3allem Saad Lamjarred", match: "lamaallem" },
-    dance: { search: "berber dance" },
+    dance: { id: "liIUBnJd0D1p6" },
   },
   {
     code: "PE",
