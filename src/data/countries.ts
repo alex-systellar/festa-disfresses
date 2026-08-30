@@ -478,7 +478,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#007FFF", "#F7D618"],
     anthem: { title: "Debout Congolais", source: "Debout Congolais.ogg" },
     song: { search: "Bana Congo", match: "dj max star" },
-    dance: { search: "congolese dance" },
+    dance: { id: "9Dfyy3l3Jn5Ok18vWd" },
   },
   {
     code: "MN",
