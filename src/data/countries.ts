@@ -488,7 +488,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#C4272F", "#015197"],
     anthem: { title: "Mongol Ulsyn töriin duulal" },
     song: { search: "Yuve Yuve Yu The HU", match: "yuve yuve yu (live" },
-    dance: { search: "throat singing" },
+    dance: { id: "rK0UfFJ8QEJedmmrVc" },
   },
   {
     code: "KZ",
