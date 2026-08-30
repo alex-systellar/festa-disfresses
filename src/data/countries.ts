@@ -359,7 +359,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#E30A17", "#FFFFFF"],
     anthem: { title: "İstiklâl Marşı", source: "Istiklâl Marsi instrumetal.ogg" },
     song: { search: "Simarik Tarkan", match: "tarkan" },
-    dance: { search: "whirling dervish" },
+    dance: { id: "3oKIPuLqud1PRtJ0oE" },
   },
   {
     code: "MA",
