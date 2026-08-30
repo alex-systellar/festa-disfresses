@@ -34,6 +34,14 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+  /* Bungee's Catalan `locl` is broken, and `lang="ca"` is what fires it. The
+     rule swaps the L of an ela geminada for `Ldot`, which carries its own
+     raised dot — but it matches `periodcentered` in the *lookahead*, so the
+     punt volat we typed is never consumed. PASSAREL·LA renders with two dots.
+     Off, so the explicit U+00B7 is the only one, which is also what the
+     fallback faces and every non-Bungee context already draw. Bungee is the
+     only face here with the feature, so inheriting this costs nothing. */
+  font-feature-settings: "locl" 0;
 }
 
 ::selection {
