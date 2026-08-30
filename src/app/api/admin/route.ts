@@ -2,7 +2,7 @@ import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { COUNTRIES, getCountry } from "@/data/countries";
 import { clearAll, isValidEmail, removeGuest } from "@/lib/assign";
-import { activeDriver, readStore } from "@/lib/store";
+import { activeDriver, ConflictError, readStore } from "@/lib/store";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -150,6 +150,13 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ removed: 1 }, { headers: { "cache-control": "no-store" } });
   } catch (err) {
     console.error("[admin] delete failed", err);
+    // A write conflict is not the storage being down: the document is there
+    // and readable, we just could not commit over it. Saying 503 tells the
+    // operator to retry, where 500 storage_unavailable sent them looking at
+    // the Blob store.
+    if (err instanceof ConflictError) {
+      return NextResponse.json({ error: "conflict", detail: err.message }, { status: 409 });
+    }
     return NextResponse.json({ error: "storage_unavailable" }, { status: 500 });
   }
 }

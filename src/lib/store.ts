@@ -281,10 +281,23 @@ async function writeBlobStore(data: StoreData, expectedVersion: string | null): 
       ...(expectedVersion ? { ifMatch: expectedVersion } : { allowOverwrite: false }),
     });
   } catch (err) {
-    if (err instanceof BlobPreconditionFailedError) throw new ConflictError();
+    if (err instanceof BlobPreconditionFailedError) {
+      // A real race: someone wrote between our read and this put. Retrying
+      // against their data is the right answer, and usually works.
+      throw new ConflictError(`blob changed since read (ifMatch ${expectedVersion})`);
+    }
     // The create path races as "already exists" rather than a precondition.
     if (!expectedVersion && err instanceof Error && /exists/i.test(err.message)) {
-      throw new ConflictError();
+      /*
+       * Not a race. We read no version yet the blob is there, so every retry
+       * reads the same nothing and fails identically — the caller will burn
+       * its whole budget and surface a 500. Say so, because the two cases
+       * need opposite fixes.
+       */
+      throw new ConflictError(
+        "blob exists but the read returned no version, so overwriting it is " +
+          `unsafe and retrying cannot help (${err.message})`,
+      );
     }
     throw err;
   }
@@ -292,8 +305,20 @@ async function writeBlobStore(data: StoreData, expectedVersion: string | null): 
 
 /* --------------------------------- public --------------------------------- */
 
-/** Raised when someone else wrote the document since we read it. */
-export class ConflictError extends Error {}
+/**
+ * Raised when someone else wrote the document since we read it.
+ *
+ * Always carries a message naming which precondition failed. It used to be a
+ * bare `extends Error {}` thrown with no argument, which logged in production
+ * as "Error:" and nothing else — true, useless, and indistinguishable between
+ * a genuine race and a write that could never succeed.
+ */
+export class ConflictError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ConflictError";
+  }
+}
 
 export type Snapshot = {
   data: StoreData;
