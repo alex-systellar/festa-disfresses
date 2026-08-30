@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { CSSProperties } from "react";
 import { CountryPlayer } from "@/components/CountryPlayer";
+import { Dancer } from "@/components/Dancer";
 import { Flag } from "@/components/Flag";
 import type { ClaimResult } from "@/components/PartyApp";
 
@@ -108,14 +109,18 @@ export function Reveal({
           ) : null}
         </div>
 
-        <div className="anthem-stub">
-          <CountryPlayer
-            key={country.code}
-            code={country.code}
-            anthemTitle={country.anthem.title}
-            hasRecording={Boolean(country.anthem.source)}
-            autoplay={!calm}
-          />
+        <div className="dance-row">
+          <Dancer code={country.code} index={0} />
+          <div className="anthem-stub">
+            <CountryPlayer
+              key={country.code}
+              code={country.code}
+              anthemTitle={country.anthem.title}
+              hasRecording={Boolean(country.anthem.source)}
+              autoplay={!calm}
+            />
+          </div>
+          <Dancer code={country.code} index={1} />
         </div>
 
         <footer className="mt-5 flex w-full flex-col items-center gap-2 text-center">

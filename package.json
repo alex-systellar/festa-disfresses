@@ -10,7 +10,8 @@
     "anthems": "node scripts/fetch-anthems.mjs",
     "typecheck": "next typegen && tsc --noEmit",
     "flags": "node scripts/fetch-flags.mjs",
-    "songs": "node scripts/fetch-songs.mjs"
+    "songs": "node scripts/fetch-songs.mjs",
+    "dances": "node scripts/fetch-dances.mjs"
   },
   "dependencies": {
     "@types/canvas-confetti": "^1.9.0",

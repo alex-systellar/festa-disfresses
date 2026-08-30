@@ -22,12 +22,12 @@ const COPY = {
   no: {
     eyebrow: "Resposta rebuda",
     title: "Bon vent i barca nova",
-    body: "Cap problema. Aquesta nit no hi haurà cap país amb el teu nom, i el que t'hauria tocat se'l quedarà algú altre.",
+    body: "No és acomiadar-se el que fa mal sinó tots els moments que marxaran amb aquest adéu.",
   },
   maybe: {
     eyebrow: "Ho deixem en l'aire",
     title: "Torna quan ho sàpigues",
-    body: "No et guardem cap país: es reparteixen per ordre d'arribada i s'acaben. Quan ho tinguis clar, torna i tira.",
+    body: "No et guardem cap país. Es reparteixen per ordre d'arribada i s'acaben. Espavila capdevila.",
   },
 } as const;
 
@@ -55,11 +55,6 @@ export function Farewell({ kind, name, onReconsider, onBack }: FarewellProps) {
               ← Canvia les dades
             </button>
           </div>
-
-          <p className="mx-auto mt-6 max-w-sm font-mono text-[0.7rem] leading-4 tracking-wider text-paper/45">
-            Ho hem apuntat. Si tornes en aquest navegador no et tornarem a
-            preguntar — però pots canviar d&apos;opinió quan vulguis.
-          </p>
 
           <p className="mt-4">
             <Link href="/com-funciona" className="btn-ghost">

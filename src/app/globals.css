@@ -269,6 +269,43 @@ body {
 }
 
 /* The anthem keeps the ticket-stub language without a full card around it. */
+/*
+ * The player with a dancer either side. The stub keeps its own max-width, so
+ * the dancers take what is left rather than squeezing it.
+ */
+.dance-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.4rem, 2vw, 1.5rem);
+  width: 100%;
+}
+
+.dancer {
+  flex: 0 0 auto;
+  width: clamp(4rem, 9vw, 7.5rem);
+  height: auto;
+  /* The stickers are cut out, so a shadow keeps them from looking pasted on. */
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.45));
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Mirrored so the pair face the player rather than both facing the same way. */
+.dancer-right {
+  transform: scaleX(-1);
+}
+
+/*
+ * Narrow screens give the player the whole width: two 4rem dancers either side
+ * of a 34rem stub leaves the transport button and the track title fighting.
+ */
+@media (max-width: 46rem) {
+  .dancer {
+    display: none;
+  }
+}
+
 .anthem-stub {
   width: 100%;
   max-width: 34rem;

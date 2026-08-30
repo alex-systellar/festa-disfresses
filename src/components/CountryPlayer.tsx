@@ -172,7 +172,6 @@ export function CountryPlayer({ code, anthemTitle, hasRecording, autoplay }: Cou
       </button>
 
       <div className="min-w-0 flex-1">
-        <p className="eyebrow">{usingSong ? "La cançó" : "Himne nacional"}</p>
         <p className="text-lg leading-tight text-balance text-paper">
           {usingSong ? song!.title : anthemTitle}
         </p>
