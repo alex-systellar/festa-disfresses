@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 
 import { getCountry } from "@/data/countries";
+import { ALL_DANCES } from "@/data/dances";
 import { getSong } from "@/data/songs";
 
 /* ---------------------------------- types --------------------------------- */
@@ -1200,6 +1201,46 @@ export default function AdminPage() {
             </ul>
           )}
         </section>
+
+        <section className="pb-10">
+          <h2 className="mb-2 text-xs uppercase tracking-widest text-white/40">
+            Balladors ({ALL_DANCES.length})
+          </h2>
+          {ALL_DANCES.length === 0 ? (
+            <p className="rounded-lg border border-white/10 px-3 py-4 text-sm text-white/40">
+              Cap ballador. Posa GIPHY_API_KEY a .env.local i executa{" "}
+              <code className="font-mono text-white/60">npm run dances</code>.
+            </p>
+          ) : (
+            <>
+              <ul className="grid grid-cols-3 gap-1.5 sm:grid-cols-5 lg:grid-cols-8">
+                {ALL_DANCES.map((d, i) => (
+                  <li
+                    key={d.id}
+                    className="flex flex-col items-center gap-1 rounded-md border border-white/10 bg-white/[0.03] p-2"
+                    title={d.title}
+                  >
+                    {/* Lazy: 94 animated WebPs would be a lot to pull at once. */}
+                    {/* eslint-disable-next-line @next/next/no-img-element -- animated WebP on Giphy's CDN; next/image would need a remotePatterns entry and `unoptimized` to keep the animation, for no gain */}
+                    <img
+                      src={d.src}
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                      className="h-20 w-auto max-w-full object-contain"
+                    />
+                    <span className="font-mono text-[10px] text-white/30">{i + 1}</span>
+                  </li>
+                ))}
+              </ul>
+              {/* Giphy's terms ask for the mark wherever their stickers appear. */}
+              <p className="mt-3 font-mono text-[10px] uppercase tracking-widest text-white/25">
+                Powered by GIPHY
+              </p>
+            </>
+          )}
+        </section>
+
       </div>
 
       {pendingDelete ? (

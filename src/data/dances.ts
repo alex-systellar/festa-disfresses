@@ -24,6 +24,9 @@ const DANCES: Dance[] = dances;
 
 export const hasDances = DANCES.length >= 2;
 
+/** The whole pool, for the contact sheet in /admin. */
+export const ALL_DANCES: Dance[] = DANCES;
+
 /** FNV-1a. Small, stable, and no dependency — this only has to spread evenly. */
 function hash(text: string): number {
   let h = 2166136261;
