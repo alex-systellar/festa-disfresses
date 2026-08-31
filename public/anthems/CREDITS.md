@@ -279,3 +279,11 @@ Performance: Banda do Batalhão da Guarda Presidencial
 - Author: Moi premier
 - Licence: CC0
 - Source: https://commons.wikimedia.org/wiki/File:Debout_Congolais.ogg
+
+## 🇰🇿 Kazakhstan — Meñiñ Qazaqstanım
+
+- File: `Kazakhstan national anthem, played by the U.S. Navy Band.ogg`
+- Author: unknown
+- Licence: Public domain
+- Source: https://commons.wikimedia.org/wiki/File:Kazakhstan_national_anthem,_played_by_the_U.S._Navy_Band.ogg
+
