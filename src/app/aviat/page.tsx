@@ -7,7 +7,7 @@ import { Dancer } from "@/components/Dancer";
 import { FlagMarquee } from "@/components/FlagMarquee";
 import { countdownTarget, remainingUntil } from "@/lib/countdown";
 
-const STRAPLINE = "41 països a repartir · 4 premis · moltes disfresses";
+const STRAPLINE = "42 països a repartir · 4 premis · moltes disfresses";
 
 /**
  * The right-hand dancer, pinned by Giphy id rather than drawn from the pool.
@@ -18,10 +18,10 @@ const RIGHT_DANCER = "x5lIgu2DDtI5IzdtUg";
 
 export const metadata: Metadata = {
   title: "Aviat · El Mundialet",
-  description: "41 països a repartir. 4 premis. Moltes disfresses.",
+  description: "42 països a repartir. 4 premis. Moltes disfresses.",
   openGraph: {
     title: "El Mundialet",
-    description: "41 països a repartir. 4 premis. Moltes disfresses.",
+    description: "42 països a repartir. 4 premis. Moltes disfresses.",
     locale: "ca_ES",
     type: "website",
   },

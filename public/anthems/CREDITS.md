@@ -287,3 +287,9 @@ Performance: Banda do Batalhão da Guarda Presidencial
 - Licence: Public domain
 - Source: https://commons.wikimedia.org/wiki/File:Kazakhstan_national_anthem,_played_by_the_U.S._Navy_Band.ogg
 
+## 🇵🇷 Puerto Rico — La Borinqueña
+
+- File: `United States Navy Band - La Borinqueña.ogg`
+- Author: unknown
+- Licence: Public domain
+- Source: https://commons.wikimedia.org/wiki/File:United_States_Navy_Band_-_La_Borinque%C3%B1a.ogg

@@ -1,5 +1,5 @@
 /**
- * The 41 party countries. Each guest gets one; the costume itself is up to
+ * The 42 party countries. Each guest gets one; the costume itself is up to
  * them — the app only hands out the country and its anthem. This file is the single source of truth:
  * `scripts/fetch-anthems.mjs` reads `anthem.source` from here to build
  * `public/anthems/<code>.mp3`.
@@ -502,6 +502,16 @@ export const COUNTRIES: Country[] = [
     },
     song: { search: "Borat Erran Baron Cohen", match: "o kazakhstan" },
     dance: { id: "Od0QRnzwRBYmDU3eEO" },
+  },
+  {
+    code: "PR",
+    name: "Puerto Rico",
+    flag: "🇵🇷",
+    flagImage: "/flags/PR.svg",
+    colors: ["#ED0000", "#0050F0"],
+    anthem: { title: "La Borinqueña", source: "United States Navy Band - La Borinqueña.ogg" },
+    song: { search: "NUEVAYoL Bad Bunny", match: "debí tirar más fotos" },
+    dance: { id: "2AuqonCREnq8UkE9FR" },
   },
 ];
 

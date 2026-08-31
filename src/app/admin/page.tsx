@@ -238,7 +238,7 @@ async function copyText(text: string): Promise<boolean> {
 /* ------------------------------- small pieces ------------------------------ */
 
 /**
- * Every flag is a local 4:3 SVG from the same set, so all 41 look like
+ * Every flag is a local 4:3 SVG from the same set, so all 42 look like
  * siblings on every platform. Emoji flags are deliberately not rendered:
  * they are drawn by the platform font and Catalonia has none at all.
  */
@@ -394,7 +394,7 @@ function SongPreview({ code, label }: { code: string; label: string }) {
 
   return (
     <>
-      {/* `preload="none"`: 41 of these on one page must not pull 41 MB. */}
+      {/* `preload="none"`: 42 of these on one page must not pull 42 MB. */}
       <audio
         ref={audioRef}
         src={src}

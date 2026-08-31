@@ -30,7 +30,7 @@ export default function OpengraphImage() {
             textTransform: "uppercase",
           }}
         >
-          41 països · 1 nit · cap excusa
+          42 països · 1 nit · cap excusa
         </div>
         {/* The article rides small above the name and the -et lights up, the
             same way the wordmark is built in public/logo.svg. */}

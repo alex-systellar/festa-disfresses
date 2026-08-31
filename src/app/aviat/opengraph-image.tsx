@@ -48,7 +48,7 @@ export default function AviatOpengraphImage() {
             textTransform: "uppercase",
           }}
         >
-          41 països a repartir · 4 premis · moltes disfresses
+          42 països a repartir · 4 premis · moltes disfresses
         </div>
         <div
           style={{
