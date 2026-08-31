@@ -249,7 +249,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#009B3A", "#FED100"],
     anthem: { title: "Jamaica, Land We Love", source: '"Jamaica, Land We Love", performed by the United States Navy Band.oga' },
     song: { search: "Could You Be Loved Bob Marley", match: "could you be loved — bob" },
-    dance: { search: "reggae dance" },
+    dance: { id: "3ov9k1019qXdHnohvG" },
   },
   {
     code: "NL",
