@@ -259,7 +259,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#AE1C28", "#21468B"],
     anthem: { title: "Het Wilhelmus", source: "Wilhelmus koor.oga" },
     song: { search: "Boom Boom Boom Boom Vengaboys", match: "vengaboys" },
-    dance: { search: "windmill dance" },
+    dance: { id: "rDE3SOEZHOf3oi2a50" },
   },
   {
     code: "SE",
