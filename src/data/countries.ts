@@ -178,7 +178,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#008C45", "#CD212A"],
     anthem: { title: "Il Canto degli Italiani", source: "Inno di Mameli instrumental.ogg" },
     song: { search: "Il Mondo Jimmy Fontana", match: "i grandi successi originali" },
-    dance: { search: "italian hand gesture" },
+    dance: { id: "9oRXCgnEXmUU8M6L0e", right: "11pnJCYOx5pgbK" },
   },
   {
     code: "ES",
@@ -520,7 +520,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#ED0000", "#0050F0"],
     anthem: { title: "La Borinqueña", source: "United States Navy Band - La Borinqueña.ogg" },
     song: { search: "NUEVAYoL Bad Bunny", match: "debí tirar más fotos" },
-    dance: { id: "2AuqonCREnq8UkE9FR" },
+    dance: { id: "2AuqonCREnq8UkE9FR", right: "HFrlHntL3XrJ17K1EW" },
   },
 ];
 
