@@ -457,7 +457,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#FFE000", "#C9A227"],
     anthem: { title: "Inno e Marcia Pontificale", source: "United States Navy Band - Inno e Marcia Pontificale.ogg" },
     song: { search: "Ave Maria Gregorian chant", match: "christ the king choir" },
-    dance: { search: "pope dance" },
+    dance: { id: "12t8RaZDt1Qf2U", right: "xHq9AMgjcllwoELltC" },
   },
   {
     code: "AF",
