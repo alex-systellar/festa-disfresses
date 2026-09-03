@@ -59,15 +59,22 @@ function hash(text: string): number {
  * A country that pins its partner overrides the pool draw on the right. The
  * draw is still made, because the left-hand fallback is stepped off it — so
  * pinning a partner never changes which sticker a different country gets.
+ *
+ * `rightIsPinned` says which of the two happened, because it decides whether
+ * the right-hand one may be mirrored — see `Dancer`.
  */
-export function getDancers(code: string): { left: Dance; right: Dance } | null {
+export function getDancers(
+  code: string,
+): { left: Dance; right: Dance; rightIsPinned: boolean } | null {
   if (!hasDances) return null;
   const h = hash(code);
   const rightIndex = h % POOL.length;
   const step = 1 + (Math.floor(h / POOL.length) % (POOL.length - 1));
+  const pinned = RIGHT_BY_COUNTRY[code];
   return {
     left: BY_COUNTRY[code] ?? POOL[(rightIndex + step) % POOL.length],
-    right: RIGHT_BY_COUNTRY[code] ?? POOL[rightIndex],
+    right: pinned ?? POOL[rightIndex],
+    rightIsPinned: Boolean(pinned),
   };
 }
 

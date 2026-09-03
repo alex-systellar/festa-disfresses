@@ -20,8 +20,18 @@ type DancerProps = {
  * degrades to exactly what it was before rather than to a broken image.
  */
 export function Dancer({ code, id, side }: DancerProps) {
-  const dance = id ? getDance(id) : code ? getDancers(code)?.[side] : null;
+  const pair = code ? getDancers(code) : null;
+  const dance = id ? getDance(id) : pair ? pair[side] : null;
   if (!dance) return null;
+
+  /*
+   * The mirror only makes sense for a sticker drawn from the pool: it turns an
+   * anonymous dancer round to face the player instead of away. Anything picked
+   * by hand — a pinned partner, or the countdown's own — was chosen facing the
+   * way it faces, and several of them carry text, which a mirror renders
+   * backwards.
+   */
+  const mirrored = side === "right" && !id && !pair?.rightIsPinned;
 
   return (
     <picture>
@@ -37,7 +47,7 @@ export function Dancer({ code, id, side }: DancerProps) {
         height={dance.height}
         loading="lazy"
         decoding="async"
-        className={`dancer dancer-${side}`}
+        className={`dancer dancer-${side}${mirrored ? " dancer-mirrored" : ""}`}
       />
     </picture>
   );

@@ -308,8 +308,13 @@ body {
   user-select: none;
 }
 
-/* Mirrored so the pair face the player rather than both facing the same way. */
-.dancer-right {
+/*
+ * Mirrored so the pair face the player rather than both facing the same way.
+ * Applied by `Dancer`, not by side: only a sticker drawn from the pool earns
+ * it. A hand-picked one is left as it is, since a mirror would run its text
+ * backwards.
+ */
+.dancer-mirrored {
   transform: scaleX(-1);
 }
 
