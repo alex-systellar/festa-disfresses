@@ -128,7 +128,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#000000", "#DD0000"],
     anthem: { title: "Das Lied der Deutschen", source: "National anthem of Germany - U.S. Army 1st Armored Division Band.ogg" },
     song: { search: "Wir singen und marschieren Soldatenlieder", match: "major hans friess", start: 20 },
-    dance: { search: "oktoberfest beer dance" },
+    dance: { id: "Zylxl5zmrWU3VhrvZU", right: "G32Bcxd304dmlcKdFS" },
   },
   {
     code: "AT",
@@ -168,7 +168,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#0055A4", "#EF4135"],
     anthem: { title: "La Marseillaise", source: "La Marseillaise.ogg" },
     song: { search: "Non je ne regrette rien Edith Piaf", match: "the best of édith piaf" },
-    dance: { search: "mime dance" },
+    dance: { id: "f9l5DNp8PuPbOkNJQY", right: "zmVgFyJ4WevoU021NV" },
   },
   {
     code: "IT",
@@ -288,7 +288,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#BA0C2F", "#00205B"],
     anthem: { title: "Ja, vi elsker dette landet", source: "Norway (National Anthem).ogg" },
     song: { search: "The Fox What Does the Fox Say Ylvis", match: "ylvis" },
-    dance: { search: "viking dance" },
+    dance: { id: "IeXoLjRPLh0G2FlQ1Z", right: "EpKrzFY8yInltzciOG" },
   },
   {
     code: "GR",
@@ -298,7 +298,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#0D5EAF", "#FFFFFF"],
     anthem: { title: "Hymn to Liberty", source: "Hymn to liberty instrumental.oga" },
     song: { search: "Zorba the Greek Sirtaki Theodorakis", match: "theodorakis", start: 20 },
-    dance: { search: "sirtaki zorba dance" },
+    dance: { id: "WeM3bi1akoVQ4", right: "dSdWr1vBtmsbK29xOQ" },
   },
   {
     code: "EG",
@@ -328,7 +328,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#002A8F", "#CF142B"],
     anthem: { title: "La Bayamesa", source: "La Bayamesa (1945).ogg" },
     song: { search: "El meu avi", match: "el meu avi — los manolos" },
-    dance: { search: "salsa dance" },
+    dance: { id: "raGTH652V2hOw", right: "9cyKXwXzzqOJKgeGLl" },
   },
   {
     code: "CH",
@@ -338,7 +338,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#D52B1E", "#FFFFFF"],
     anthem: { title: "Schweizerpsalm", source: "Swiss Psalm.ogg" },
     song: { search: "Chihuahua DJ BoBo", match: "chihuahua — dj bobo" },
-    dance: { search: "swiss yodel cow" },
+    dance: { id: "UVwYdpip20nbPfTWdZ", right: "8zuHuiw0RwMVy" },
   },
   {
     code: "IE",
@@ -418,7 +418,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#FCD116", "#003893"],
     anthem: { title: "¡Oh, gloria inmarcesible!", source: "United States Navy Band - ¡Oh, gloria inmarcesible!.ogg" },
     song: { search: "Hips Don't Lie Shakira", match: "wyclef jean) — shakira", start: 5 },
-    dance: { search: "cumbia dance" },
+    dance: { id: "DBv3fLQGTBmJW", right: "orvlFjcA4paKY" },
   },
   {
     code: "CT",
