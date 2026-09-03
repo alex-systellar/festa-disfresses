@@ -5,10 +5,12 @@
  *   npm run dances            # only fetch if the file is empty
  *   npm run dances -- --force
  *
- * Two halves. `pool` is a shared set of dance-meme stickers, used for the
+ * Three parts. `pool` is a shared set of dance-meme stickers, used for the
  * right-hand dancer. `byCountry` is one sticker per country, resolved from the
  * `dance` seed in countries.ts, used for the left — so every reveal pairs
  * something of the country's own with something from the common pool.
+ * `rightByCountry` holds the exception: a country whose seed names a `right`
+ * pins that side too, and its pool draw is never made.
  *
  * Stickers, not GIFs: /v1/stickers is a separate library where everything is
  * cut out against a transparent background. There is no background removal for
@@ -276,13 +278,46 @@ for (const country of COUNTRIES) {
   }
 }
 
+/* --------------------- the pinned right-hand partners --------------------- */
+
+/*
+ * Ordinarily the right-hand dancer is drawn from the pool by country code at
+ * render time, so there is nothing to resolve and nothing to store. Only a
+ * country that names a `right` lands here — kept in its own map so that
+ * `byCountry` stays exactly what its name says, the country's own sticker.
+ */
+const rightByCountry = {};
+
+for (const country of COUNTRIES) {
+  const pinned = country.dance?.right;
+  if (!pinned) continue;
+
+  const stored = topUp ? existing.rightByCountry?.[country.code] : null;
+  if (stored && stored.id === pinned) {
+    rightByCountry[country.code] = stored;
+    continue;
+  }
+
+  try {
+    const d = shape(await api(`gifs/${pinned}`, {}));
+    if (!d) throw new Error("no usable frame");
+    rightByCountry[country.code] = d;
+    const mark = d.transparent ? "" : "  [opaque GIF, not a sticker]";
+    console.log(`✓ ${country.code} ${country.name} (dreta) — ${d.title}${mark}`);
+  } catch (err) {
+    // The pool draw is still there to catch it, so a bad id costs the pairing,
+    // not the dancer.
+    fellBack.push(`${country.code} right (${err.message})`);
+  }
+}
+
 /*
  * Anything still marked opaque gets checked for real. Only these are fetched:
  * the sticker library is transparent by definition, so this is a handful of
  * ranged requests over the hand-picked GIFs, not a pass over the whole pool.
  */
 let corrected = 0;
-for (const entry of [...pool, ...Object.values(byCountry)]) {
+for (const entry of [...pool, ...Object.values(byCountry), ...Object.values(rightByCountry)]) {
   if (entry.transparent) continue;
   const alpha = await measureAlpha(entry.src);
   if (alpha === true) {
@@ -292,10 +327,13 @@ for (const entry of [...pool, ...Object.values(byCountry)]) {
 }
 if (corrected) console.log(`· ${corrected} marked opaque actually carry alpha`);
 
-await fs.writeFile(OUT, JSON.stringify({ pool, byCountry }, null, 2) + "\n", "utf8");
+await fs.writeFile(OUT, JSON.stringify({ pool, byCountry, rightByCountry }, null, 2) + "\n", "utf8");
 
-console.log(`\nDone: ${pool.length} in the pool, ${Object.keys(byCountry).length}/${COUNTRIES.length} countries with their own.`);
+console.log(
+  `\nDone: ${pool.length} in the pool, ${Object.keys(byCountry).length}/${COUNTRIES.length} countries with their own` +
+    `, ${Object.keys(rightByCountry).length} with a pinned partner.`,
+);
 if (fellBack.length) {
-  console.log(`\n${fellBack.length} fell back to the pool (no sticker for that term):`);
+  console.log(`\n${fellBack.length} fell back to the pool (nothing resolved):`);
   for (const f of fellBack) console.log(`  ${f}`);
 }

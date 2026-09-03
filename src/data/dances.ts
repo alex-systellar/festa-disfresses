@@ -22,12 +22,18 @@ export type Dance = {
   transparent: boolean;
 };
 
-type DanceData = { pool: Dance[]; byCountry: Record<string, Dance> };
+type DanceData = {
+  pool: Dance[];
+  byCountry: Record<string, Dance>;
+  /** Only the countries that pin their right-hand partner; absent before the
+   *  script grew that half, hence the default below. */
+  rightByCountry?: Record<string, Dance>;
+};
 
-const { pool: POOL, byCountry: BY_COUNTRY } = data as DanceData;
+const { pool: POOL, byCountry: BY_COUNTRY, rightByCountry: RIGHT_BY_COUNTRY = {} } = data as DanceData;
 
 export const hasDances = POOL.length >= 2;
-export { POOL, BY_COUNTRY };
+export { POOL, BY_COUNTRY, RIGHT_BY_COUNTRY };
 
 /** FNV-1a. Small, stable, and no dependency — this only has to spread evenly. */
 function hash(text: string): number {
@@ -49,6 +55,10 @@ function hash(text: string): number {
  *
  * A country with no sticker of its own falls back to a second pool pick,
  * stepped so it can never collide with the right-hand one.
+ *
+ * A country that pins its partner overrides the pool draw on the right. The
+ * draw is still made, because the left-hand fallback is stepped off it — so
+ * pinning a partner never changes which sticker a different country gets.
  */
 export function getDancers(code: string): { left: Dance; right: Dance } | null {
   if (!hasDances) return null;
@@ -57,7 +67,7 @@ export function getDancers(code: string): { left: Dance; right: Dance } | null {
   const step = 1 + (Math.floor(h / POOL.length) % (POOL.length - 1));
   return {
     left: BY_COUNTRY[code] ?? POOL[(rightIndex + step) % POOL.length],
-    right: POOL[rightIndex],
+    right: RIGHT_BY_COUNTRY[code] ?? POOL[rightIndex],
   };
 }
 

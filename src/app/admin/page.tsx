@@ -7,7 +7,7 @@ import { createPortal } from "react-dom";
 import { Reveal } from "@/components/Reveal";
 import type { ClaimResult } from "@/components/PartyApp";
 import { COUNTRIES, getCountry } from "@/data/countries";
-import { BY_COUNTRY, POOL } from "@/data/dances";
+import { BY_COUNTRY, POOL, RIGHT_BY_COUNTRY } from "@/data/dances";
 import { getSong } from "@/data/songs";
 
 /* ---------------------------------- types --------------------------------- */
@@ -1305,6 +1305,7 @@ export default function AdminPage() {
               <ul className="grid grid-cols-3 gap-1.5 sm:grid-cols-5 lg:grid-cols-8">
                 {COUNTRIES.map((c) => {
                   const d = BY_COUNTRY[c.code];
+                  const partner = RIGHT_BY_COUNTRY[c.code];
                   return (
                     <li
                       key={c.code}
@@ -1329,6 +1330,25 @@ export default function AdminPage() {
                       {d && !d.transparent ? (
                         <span className="font-mono text-[9px] uppercase text-amber-300/70">
                           opac
+                        </span>
+                      ) : null}
+                      {/* A pinned partner replaces this country's draw from the
+                          pool, so the pool grid below no longer says what it
+                          gets on the right. Show it here instead. */}
+                      {partner ? (
+                        <span
+                          className="flex items-center gap-1 font-mono text-[9px] uppercase text-white/30"
+                          title={`parella fixada: ${partner.title}`}
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element -- same reasoning as above */}
+                          <img
+                            src={partner.still}
+                            alt=""
+                            loading="lazy"
+                            decoding="async"
+                            className="h-5 w-5 rounded-sm object-cover"
+                          />
+                          parella
                         </span>
                       ) : null}
                     </li>

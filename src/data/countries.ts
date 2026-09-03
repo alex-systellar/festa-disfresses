@@ -79,7 +79,7 @@ export type Country = {
    * for some terms. The script reports every country that falls back.
    */
   dance?: {
-    /** Giphy sticker search. Ignored when `id` is set. */
+    /** Giphy sticker search for the left-hand dancer. Ignored when `id` is set. */
     search?: string;
     /**
      * Exact Giphy id, for a hand-picked one. Note that ids from a GIF search
@@ -87,6 +87,15 @@ export type Country = {
      * plinth the way the cut-out ones do.
      */
     id?: string;
+    /**
+     * Pins the right-hand dancer as well, in place of that country's draw from
+     * the shared pool — for a pair that only works together, where the joke is
+     * in the two of them rather than in either one.
+     *
+     * Unset is the norm and the default: the pool pick stands, and the country
+     * keeps one of its own beside one of everybody's.
+     */
+    right?: string;
   };
 };
 
