@@ -319,14 +319,48 @@ body {
 }
 
 /*
- * Narrow screens give the player the whole width. The threshold rises with the
- * dancers: two 9rem-wide stickers either side of a 34rem stub want a good deal
- * more room than the small ones did, and below this they win it by squeezing
- * the transport button and the track title.
+ * Narrow screens cannot give all three a line: two 9rem-wide stickers either
+ * side of a 34rem stub win the room by squeezing the transport button and the
+ * track title. This used to hide the dancers outright, which is why they never
+ * appeared on a phone.
+ *
+ * They stack instead. The player takes the first row to itself and the pair
+ * drop onto the second, side by side and smaller — so the dancers survive the
+ * phone and the player still gets the width that hiding them was protecting.
  */
 @media (max-width: 58rem) {
+  /*
+   * Grid rather than a wrapped flex row, because the stub's own 34rem
+   * max-width overrides a 100% flex-basis — around 900px it stops filling the
+   * line and a dancer creeps up beside it. Explicit placement cannot drift.
+   */
+  .dance-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .anthem-stub {
+    grid-row: 1;
+    grid-column: 1 / -1;
+  }
+
+  /* The two of them share the row beneath, meeting in the middle. */
+  .dancer-left {
+    grid-row: 2;
+    grid-column: 1;
+    justify-self: end;
+  }
+
+  .dancer-right {
+    grid-row: 2;
+    grid-column: 2;
+    justify-self: start;
+  }
+
   .dancer {
-    display: none;
+    height: clamp(5.5rem, 22vw, 9rem);
+    /* Its column is the limit now, not a share of the viewport. */
+    max-width: 100%;
   }
 }
 
