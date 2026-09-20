@@ -57,8 +57,35 @@ type PendingGuest = {
   rsvpAt: string;
 };
 
+type Phase = "draw" | "over" | "concurs";
+
+type ConcursRow = {
+  code: string;
+  country: string;
+  flagImage: string | null;
+  votes: number;
+  /** False when nobody is wearing it: a vote that cannot win. */
+  worn: boolean;
+};
+
+type ConcursCategory = {
+  id: string;
+  name: string;
+  votes: number;
+  rows: ConcursRow[];
+};
+
 type AdminData = {
   driver: "blob" | "file";
+  /** From REPARTIMENT_OVER and IS_CONCURS. See src/lib/phase.ts. */
+  phase: Phase;
+  concurs: {
+    /** Votes that count, over every category. */
+    votes: number;
+    /** Guests who could have voted: everyone holding a country. */
+    eligible: number;
+    categories: ConcursCategory[];
+  };
   total: number;
   assigned: number;
   rsvpCounts: { yes: number; maybe: number; no: number };
@@ -436,6 +463,118 @@ function SongPreview({ code, label }: { code: string; label: string }) {
   );
 }
 
+const PHASE_LABEL: Record<Phase, { text: string; hint: string; tone: string }> = {
+  draw: {
+    text: "Sorteig obert",
+    hint: "els convidats s'apunten i reben país",
+    tone: "border-emerald-400/40 bg-emerald-400/10 text-emerald-300",
+  },
+  over: {
+    text: "Repartiment tancat",
+    hint: "REPARTIMENT_OVER · ningú s'apunta; consulten el país amb nom i correu",
+    tone: "border-amber-400/40 bg-amber-400/10 text-amber-300",
+  },
+  concurs: {
+    text: "Concurs obert",
+    hint: "IS_CONCURS · els convidats voten el premi del públic",
+    tone: "border-fuchsia-400/40 bg-fuchsia-400/10 text-fuchsia-300",
+  },
+};
+
+/** Which face the guest-facing site is wearing right now, and which flag set it. */
+function PhasePill({ phase }: { phase: Phase }) {
+  const { text, hint, tone } = PHASE_LABEL[phase];
+  return (
+    <span
+      title={hint}
+      className={`inline-block rounded-full border px-2.5 py-0.5 text-[11px] uppercase tracking-widest ${tone}`}
+    >
+      {text}
+    </span>
+  );
+}
+
+/**
+ * The prizes so far: one ranking per category, one bar per country, most votes
+ * first. Countries somebody wears stay in the list on nought — a costume nobody
+ * voted for is still worth seeing — and a country nobody wears is only listed
+ * once it has a vote, marked as such. Only the host sees this; guests are never
+ * shown a count.
+ */
+function ConcursPanel({
+  concurs,
+  open,
+}: {
+  concurs: AdminData["concurs"];
+  open: boolean;
+}) {
+  return (
+    <section className="mt-4 rounded-lg border border-white/10 bg-white/[0.02] p-3">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h2 className="text-xs uppercase tracking-widest text-white/40">
+          Premis · {concurs.votes} vots de {concurs.eligible} persones
+        </h2>
+        {!open ? (
+          <p className="text-[11px] text-white/40">
+            El concurs està tancat: això és el que va quedar.
+          </p>
+        ) : null}
+      </div>
+
+      <div className="mt-3 grid gap-4 lg:grid-cols-2">
+        {concurs.categories.map((category) => {
+          const top = Math.max(1, ...category.rows.map((row) => row.votes));
+          return (
+            <div key={category.id}>
+              <h3 className="text-sm font-semibold text-white/80">
+                {category.name}{" "}
+                <span className="font-mono text-[11px] font-normal text-white/40">
+                  {category.votes} vots
+                </span>
+              </h3>
+
+              {category.rows.length === 0 ? (
+                <p className="mt-2 text-sm text-white/50">Encara no hi ha cap país en joc.</p>
+              ) : (
+                <ol className="mt-2 grid gap-1.5">
+                  {category.rows.map((row, i) => (
+                    <li
+                      key={row.code}
+                      className="relative flex items-center gap-2 overflow-hidden rounded-md border border-white/10 px-2.5 py-1.5"
+                    >
+                      {/* The bar sits behind the row, so the ranking reads at a glance. */}
+                      <span
+                        aria-hidden="true"
+                        className={`absolute inset-y-0 left-0 ${row.votes > 0 && i === 0 ? "bg-amber-400/25" : "bg-white/[0.06]"}`}
+                        style={{ width: `${(row.votes / top) * 100}%` }}
+                      />
+                      <span className="relative w-5 shrink-0 text-right font-mono text-[11px] text-white/40">
+                        {i + 1}
+                      </span>
+                      {row.flagImage ? <Flag src={row.flagImage} alt="" /> : null}
+                      <span className="relative min-w-0 flex-1 truncate text-sm">
+                        {row.country}
+                        {row.worn ? null : (
+                          <span className="ml-1.5 text-[11px] text-amber-300/80">
+                            · ningú el porta
+                          </span>
+                        )}
+                      </span>
+                      <span className="relative font-mono text-sm tabular-nums text-white">
+                        {row.votes}
+                      </span>
+                    </li>
+                  ))}
+                </ol>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 function Stat({
   label,
   value,
@@ -703,6 +842,9 @@ export default function AdminPage() {
     );
   }, [data, needle]);
 
+  /** The vote count matters while the contest is open, and stays once it has votes. */
+  const showConcurs = data ? data.phase === "concurs" || data.concurs.votes > 0 : false;
+
   const duplicates = useMemo(
     () => (data ? data.assignments.filter((a) => a.duplicate).length : 0),
     [data],
@@ -843,6 +985,9 @@ export default function AdminPage() {
         <header className="flex flex-wrap items-baseline justify-between gap-3">
           <div>
             <h1 className="text-xl font-semibold tracking-tight">Panell d&apos;administració</h1>
+            <p className="mt-1">
+              <PhasePill phase={data.phase} />
+            </p>
             <p className="text-xs text-white/40">
               {lastLoadedAt ? `Actualitzat ${absoluteTime(new Date(lastLoadedAt).toISOString())}` : null}
             </p>
@@ -937,7 +1082,17 @@ export default function AdminPage() {
             value={data.driver}
             hint={data.driver === "file" ? "disc local" : "Vercel Blob"}
           />
+          {showConcurs ? (
+            <Stat
+              label="Vots"
+              value={String(data.concurs.votes)}
+              hint={`${data.concurs.categories.length} premis · ${data.concurs.eligible} votants`}
+              tone={data.concurs.votes > 0 ? "good" : "neutral"}
+            />
+          ) : null}
         </section>
+
+        {showConcurs ? <ConcursPanel concurs={data.concurs} open={data.phase === "concurs"} /> : null}
 
         {deviceGroups.length > 0 || ipGroups.length > 0 ? (
           <section className="mt-4 rounded-lg border border-white/10 bg-white/[0.02] p-3">

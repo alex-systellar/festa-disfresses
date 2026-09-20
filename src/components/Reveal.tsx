@@ -3,9 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { CSSProperties } from "react";
-import { CountryPlayer } from "@/components/CountryPlayer";
-import { Dancer } from "@/components/Dancer";
-import { Flag } from "@/components/Flag";
+import { CountryStage } from "@/components/CountryStage";
 import type { ClaimResult } from "@/components/PartyApp";
 
 type RevealProps = {
@@ -15,6 +13,15 @@ type RevealProps = {
   onReroll: () => void;
   onReset: () => void;
   rerollError: string | null;
+  /**
+   * `draw` is the reveal at the end of the sorteig. `board` is a guest looking
+   * up what they were given once the draw is over: there is no reroll and no
+   * pool left to count, and instead of "start again" there is a way back to
+   * the wall of countries and a way to log out.
+   */
+  mode?: "draw" | "board";
+  /** Board mode only: back to the wall. */
+  onBack?: () => void;
 };
 
 export function Reveal({
@@ -23,6 +30,8 @@ export function Reveal({
   onReroll,
   onReset,
   rerollError,
+  mode = "draw",
+  onBack,
 }: RevealProps) {
   const { country, duplicate, canReroll, remaining } = result;
   const [c1, c2] = country.colors;
@@ -76,52 +85,36 @@ export function Reveal({
       style={{ "--c1": c1, "--c2": c2 } as CSSProperties}
     >
       <div className="reveal-stage rise">
-        <div className="reveal-body">
-          <div className="text-center">
-            {/* Not an <h1>: the country below is the page's subject and holds
-                that role, so this stays a paragraph wearing the title style. */}
-            <p className="section-title">Ja tens país!</p>
-            <p className="mt-2.5 font-mono text-[0.7rem] uppercase tracking-[0.2em] text-paper/60">
-              Prepara la disfressa ·{" "}
-              <Link
-                href="/com-funciona"
-                className="inline-block px-1 py-1.5 underline decoration-paper/30 underline-offset-4 transition hover:text-turquesa"
-              >
-                les normes
-              </Link>
-            </p>
-          </div>
-
-          <div className="plinth">
-            <span className="halo" aria-hidden="true" />
-            <Flag
-              country={country}
-              className={`big-flag flag-face ${calm ? "" : "pop"}`}
-            />
-          </div>
-
-          <h1 className="country-name text-center">{country.name}</h1>
-
-          {duplicate ? (
-            <span className="stamp">
-              País compartit · s&apos;han acabat els originals
-            </span>
-          ) : null}
-        </div>
-
-        <div className="dance-row">
-          <Dancer code={country.code} side="left" />
-          <div className="anthem-stub">
-            <CountryPlayer
-              key={country.code}
-              code={country.code}
-              anthemTitle={country.anthem.title}
-              hasRecording={Boolean(country.anthem.source)}
-              autoplay={!calm}
-            />
-          </div>
-          <Dancer code={country.code} side="right" />
-        </div>
+        <CountryStage
+          country={country}
+          pop={!calm}
+          autoplay={!calm}
+          header={
+            <div className="text-center">
+              {/* Not an <h1>: the country below is the page's subject and holds
+                  that role, so this stays a paragraph wearing the title style. */}
+              <p className="section-title">
+                {mode === "board" ? "El teu país" : "Ja tens país!"}
+              </p>
+              <p className="mt-2.5 font-mono text-[0.7rem] uppercase tracking-[0.2em] text-paper/60">
+                Prepara la disfressa ·{" "}
+                <Link
+                  href="/com-funciona"
+                  className="inline-block px-1 py-1.5 underline decoration-paper/30 underline-offset-4 transition hover:text-turquesa"
+                >
+                  les normes
+                </Link>
+              </p>
+            </div>
+          }
+          stamp={
+            duplicate ? (
+              <span className="stamp">
+                País compartit · s&apos;han acabat els originals
+              </span>
+            ) : null
+          }
+        />
 
         <footer className="mt-5 flex w-full flex-col items-center gap-2 text-center">
           {rerollError ? (
@@ -172,13 +165,20 @@ export function Reveal({
             </div>
           ) : null}
 
-          <p className="font-mono text-[0.7rem] uppercase tracking-[0.2em] text-paper/55">
-            {remaining > 0
-              ? `Queden ${remaining} països sense amo`
-              : "Tots els països repartits"}
-          </p>
+          {mode === "draw" ? (
+            <p className="font-mono text-[0.7rem] uppercase tracking-[0.2em] text-paper/55">
+              {remaining > 0
+                ? `Queden ${remaining} països sense amo`
+                : "Tots els països repartits"}
+            </p>
+          ) : null}
+          {mode === "board" && onBack ? (
+            <button type="button" onClick={onBack} className="btn-outline max-w-xs">
+              ← Tots els països
+            </button>
+          ) : null}
           <button type="button" onClick={onReset} className="btn-ghost">
-            No sóc jo · comença de nou
+            {mode === "board" ? "No sóc jo · surt" : "No sóc jo · comença de nou"}
           </button>
         </footer>
       </div>

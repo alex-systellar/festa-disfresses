@@ -61,6 +61,8 @@ countries and nobody has to coordinate anything.
 | `/api/precheck`       | POST   | `{ email, name }`   | Every check `claim` makes, assigning nothing. Answers a `GuestState`. `400 invalid_email` / `invalid_email_domain` / `invalid_name`, `409 party_full`, `403 device_limit` / `ip_limit`. |
 | `/api/rsvp`           | POST   | `{ email, name, answer }` | Stores a `maybe` or a `no`. A `yes` goes through `claim`. `400 invalid_answer`. |
 | `/api/lookup?email=…` | GET    | —                   | What we know about an email. Answers a `GuestState`; never refuses, never writes. |
+| `/api/login`          | POST   | `{ email, name }`   | After the draw: checks the pair and returns the guest's country, plus the contest state (`voting: { myVotes }`, the ballot by category) while `IS_CONCURS` is on. Sets no cookie. `401 no_match` (the same answer for a wrong email and a wrong name), `403 no_country`, `403 repartiment_open` while the draw is still on. |
+| `/api/vote`           | POST   | `{ email, name, category, country }` | Records, replaces or (with `country: null`) clears the guest's vote in one category. `200 { myVotes }`, the whole ballot. `401 no_match`, `403 own_country`, `403 concurs_closed`, `400 invalid_category` / `invalid_country`, `409 country_repeated` (with the `category` it was already used in). |
 | `/api/admin?key=…`    | GET    | —                   | Full dump for the dashboard, gated by `ADMIN_KEY`. `401 unauthorized`. |
 | `/api/admin`          | DELETE | `{ email }` or `{ all: true }` | Removes one assignment, or every one. Key goes in the `x-admin-key` header. `401 unauthorized`, `400 invalid_email`, `404 not_found`. |
 
@@ -161,8 +163,9 @@ cp .env.example .env.local
 ## Storage model
 
 There is **no database**. The whole party is a single JSON document
-(`{ version, assignments[], guests[] }` — `guests` holds every RSVP, including
-the people who said no and therefore never got an assignment) and `src/lib/store.ts` picks one of two drivers
+(`{ version, assignments[], guests[], votes[] }` — `guests` holds every RSVP, including
+the people who said no and therefore never got an assignment, and `votes` holds one
+row per guest per category, keyed by `voter` + `category`) and `src/lib/store.ts` picks one of two drivers
 automatically, based on whether `BLOB_READ_WRITE_TOKEN` is set:
 
 | Driver | When                          | Where the data lives                              |
@@ -204,6 +207,8 @@ See `.env.example` for the annotated version.
 | `ADMIN_KEY`             | Yes, for `/admin`     | Gates `GET /api/admin`. Unset ⇒ every admin request gets `401`.                                                        |
 | `BLOB_READ_WRITE_TOKEN` | Recommended on Vercel | Injected by Vercel when a Blob store is linked. Selects the durable `blob` driver; absent ⇒ ephemeral `file` driver.    |
 | `MAX_PER_IP`            | No — leave unset      | Hard cap on assignments per IP. Unset (default) = **no limit**. See the warning below.                                 |
+| `REPARTIMENT_OVER`      | No — default `false`  | `true` closes the draw and turns `/` into the wall of all the countries. See "After the draw" below.                     |
+| `IS_CONCURS`            | No — default `false`  | `true` turns `/` into the voting page for the public prize. Wins over `REPARTIMENT_OVER`.                                |
 | `EMAIL_DNS_CHECK`       | No — leave unset      | Set to `off` to skip the MX check on claim. For local testing against made-up domains only.                            |
 
 ### ⚠️ `MAX_PER_IP` refuses real guests
@@ -224,6 +229,66 @@ silently lock out a couple sharing a laptop.
 
 ---
 
+## After the draw: the wall and the contest
+
+Two flags decide what `/` is. Both are read on the server, per request, and both
+need a restart (local) or a redeploy (Vercel) to change. Accepted values are
+`true`, `1`, `yes`, `on`, `si` and `sí`, in any case; anything else, a typo
+included, is off. The phase is `IS_CONCURS` first, then `REPARTIMENT_OVER`, then
+the draw. `COUNT_DOWN` still wins over all of them.
+
+| Flags                      | `/` shows                         | Endpoints                                                                    |
+| -------------------------- | --------------------------------- | ---------------------------------------------------------------------------- |
+| neither                    | the draw                          | `claim`, `precheck`, `rsvp`, `reroll`, `lookup` open; `login`, `vote` closed |
+| `REPARTIMENT_OVER=true`    | the wall of countries             | the draw endpoints answer `410 repartiment_over`; `login` open               |
+| `IS_CONCURS=true`          | the voting page                   | as above, and `vote` open                                                    |
+
+`src/proxy.ts` does it with a rewrite, so the address stays `/` and the routes
+`/repartiment` and `/concurs` redirect back to it. `src/lib/phase.ts` holds the
+phase and the endpoint table that the proxy and the route handlers share.
+`/api/admin` is never refused.
+
+**The wall** shows every country's flag, with a few memes stuck among them
+(Sparta, the Conguitos, Morocco and Kazakhstan; the list is `WALL_MEMES` in
+`src/components/RepartimentApp.tsx`). A guest can log in with their name and
+email to see their own country. *Explora* opens the same viewer as the admin
+preview, one country at a time with its song and meme, and shows nobody's name
+and no assignments. There is no sign-up: a guest who is not on the list gets
+`no_match`.
+
+**The contest** is behind the same login, and votes in the four prizes on the
+rules page (`src/data/categories.ts`, which the rules page reads too). A guest
+has one vote per prize and can change or take it back. They cannot vote for
+their own country, and cannot give the same country two prizes: to move it they
+take the first vote back. Any country in the list can be voted for, not only
+the ones somebody is wearing, so the page does not reveal which are taken.
+There are two ways to choose, with a *Cerca* / *Explora* switch between them:
+search the list and vote from it, or walk through the countries one by one in
+the viewer and vote from there. The count is on `/admin`, one ranking per
+prize, where a country nobody wears is marked *ningú el porta*. Votes stored
+before there were prizes count as the public's.
+
+**Login has no session.** The name and email are checked on every call, and the
+browser remembers them in `localStorage` (`festa-disfresses:guest`) and sends
+them again. The name is matched loosely: every word typed has to be a whole word
+of the stored name, ignoring case and accents, so `marta` matches `Marta Puig`
+but `Mart` does not. A wrong email and a wrong name give the same answer, so the
+endpoint cannot be used to ask whether an address is on the list.
+
+**Deleting a guest** in `/admin` also deletes their vote.
+
+**The film.** In either phase, a visit opens with
+`public/intro/celebrate-our-differences.mp4` full screen (`IntroGate`), then
+lifts onto the page. It shows every time until it has been watched to the end
+or skipped once (`localStorage`, key `festa-disfresses:intro-seen`), and then
+the page opens directly. A *Torna a veure el vídeo* button on the page plays it
+again, and `/?intro` forces it. It has a *Salta* button and stops on Esc.
+Browsers refuse sound before the first tap, so it starts with sound where that
+is allowed and muted, with an *Activa el so* button, where it is not; with
+reduced motion set it waits behind a play button instead. A file that fails to
+load does not count as watched. Swap the file to change the film; keep it 4:3
+and small, since it is fetched before the page is shown.
+
 ## The admin page
 
 `/admin` is a dense client-side ops view, in Catalan:
@@ -241,6 +306,8 @@ silently lock out a couple sharing a laptop.
   `mateix dispositiu ×N` on same-browser collisions, and a secondary amber
   `compartida ×N` on shared IPs — both listing the other emails in their
   tooltip;
+- a **phase** pill, and once the contest is on a **Vots** count and one ranking
+  per prize;
 - a grid of the countries still available;
 - one filter box across guest names, emails, country names/codes, IPs and
   device ids;

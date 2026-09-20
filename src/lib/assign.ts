@@ -123,7 +123,12 @@ function enforceLimits(data: StoreData, email: string, ip?: string, deviceId?: s
   }
 }
 
-function toResult(assignment: Assignment, country: Country, data: StoreData, isNew: boolean): ClaimResult {
+export function toResult(
+  assignment: Assignment,
+  country: Country,
+  data: StoreData,
+  isNew: boolean,
+): ClaimResult {
   const remaining = remainingCount(data.assignments);
   return {
     country,
@@ -210,7 +215,9 @@ function isFull(data: StoreData): boolean {
  */
 const MAX_ATTEMPTS = 5;
 
-async function mutate<T>(fn: (data: StoreData) => { value: T; dirty: boolean }): Promise<T> {
+export async function mutate<T>(
+  fn: (data: StoreData) => { value: T; dirty: boolean },
+): Promise<T> {
   return withLock(async () => {
     for (let attempt = 1; ; attempt++) {
       const { data, version } = await readStore();
@@ -379,6 +386,10 @@ export async function removeGuest(rawEmail: string): Promise<boolean> {
     // just deleted straight back to a farewell screen on their next visit.
     data.guests = data.guests.filter((g) => g.email !== email);
     const removed = data.assignments.length + data.guests.length !== before;
+    if (removed) {
+      // Their vote goes with them: a guest the host deleted is not a voter.
+      data.votes = data.votes.filter((v) => v.voter !== email);
+    }
     return { value: removed, dirty: removed };
   });
 }
@@ -394,9 +405,10 @@ export async function removeGuest(rawEmail: string): Promise<boolean> {
 export async function clearAll(): Promise<number> {
   return mutate((data) => {
     const removed = data.assignments.length;
-    const hadGuests = data.guests.length > 0;
+    const hadGuests = data.guests.length > 0 || data.votes.length > 0;
     data.assignments = [];
     data.guests = [];
+    data.votes = [];
     return { value: removed, dirty: removed > 0 || hadGuests };
   });
 }

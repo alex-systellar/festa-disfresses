@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { isValidEmail, lookup } from "@/lib/assign";
+import { phaseGuard } from "@/lib/phase-guard";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -12,6 +13,9 @@ export const dynamic = "force-dynamic";
  * must never refuse anybody or set a device cookie.
  */
 export async function GET(request: Request) {
+  const closed = phaseGuard("/api/lookup");
+  if (closed) return closed;
+
   const email = new URL(request.url).searchParams.get("email") ?? "";
   if (!isValidEmail(email)) {
     return NextResponse.json({ error: "invalid_email" }, { status: 400 });

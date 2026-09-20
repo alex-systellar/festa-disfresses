@@ -2,6 +2,9 @@ import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { COUNTRIES, getCountry } from "@/data/countries";
 import { clearAll, isValidEmail, removeGuest } from "@/lib/assign";
+import { getCategory } from "@/data/categories";
+import { tally } from "@/lib/concurs";
+import { currentPhase } from "@/lib/phase";
 import { activeDriver, ConflictError, readStore } from "@/lib/store";
 
 export const runtime = "nodejs";
@@ -60,9 +63,35 @@ export async function GET(request: Request) {
   const rsvpCounts = { yes: 0, maybe: 0, no: 0 };
   for (const g of data.guests) rsvpCounts[g.rsvp] += 1;
 
+  // Counted by `tally`, which drops any vote that no longer makes sense — a
+  // voter the host deleted, a country nobody wears, a vote for one's own.
+  const votes = tally(data);
+
   return NextResponse.json(
     {
       driver: activeDriver(),
+      /** Which part of the party the app is in, from the two env flags. */
+      phase: currentPhase(),
+      /** The public prize so far. Only ever shown to the host. */
+      concurs: {
+        votes: votes.votes,
+        eligible: votes.eligible,
+        categories: votes.categories.map((category) => ({
+          id: category.id,
+          name: getCategory(category.id)?.name ?? category.id,
+          votes: category.votes,
+          rows: category.rows.map((row) => {
+            const country = getCountry(row.code);
+            return {
+              code: row.code,
+              country: country?.name ?? row.code,
+              flagImage: country?.flagImage ?? null,
+              votes: row.votes,
+              worn: row.worn,
+            };
+          }),
+        })),
+      },
       total: COUNTRIES.length,
       assigned: data.assignments.length,
       rsvpCounts,

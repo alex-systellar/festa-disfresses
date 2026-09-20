@@ -10,6 +10,7 @@ import {
 import { deviceCookie, newDeviceId, readDeviceId } from "@/lib/device";
 import { checkEmailDomain } from "@/lib/email";
 import { clientIp } from "@/lib/request";
+import { phaseGuard } from "@/lib/phase-guard";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -25,6 +26,9 @@ export const dynamic = "force-dynamic";
  * still only handed out once somebody says they are coming.
  */
 export async function POST(request: Request) {
+  const closed = phaseGuard("/api/precheck");
+  if (closed) return closed;
+
   let body: unknown;
   try {
     body = await request.json();

@@ -914,6 +914,621 @@ body {
   }
 }
 
+/* ---------------- the wall of countries (once the draw is over) ---------------- */
+
+.wall-inner {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1.5rem, 5vw, 3rem);
+  width: 100%;
+  max-width: 78rem;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+  padding-block: clamp(1rem, 4vh, 3rem);
+}
+
+.wall-hero {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1rem, 3vh, 1.5rem);
+  width: 100%;
+  max-width: 30rem;
+  margin-inline: auto;
+}
+
+.wall-hero > header {
+  text-align: center;
+}
+
+.wall-hero .gate-logo {
+  margin-inline: auto;
+}
+
+/* The wall is a box of its own that scrolls, never the page. The scrollbar is
+   hidden, so the edges fade into the background instead: a row cut off at the
+   bottom is the cue that there is more. The padding keeps the first and last
+   rows out of the fade, and leaves room for the tiles to lift on hover
+   without being clipped by the box. */
+.wall-board {
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 0.75rem 0.5rem 2.5rem;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 0.75rem, #000 calc(100% - 2.25rem), transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 0.75rem, #000 calc(100% - 2.25rem), transparent 100%);
+}
+
+.wall-board::-webkit-scrollbar {
+  display: none;
+}
+
+/* Stacked, on a phone or a narrow window: the page still scrolls past the way
+   in, but the wall is a window onto the flags rather than a column that makes
+   the page a hundred screens long. */
+.wall-board {
+  max-height: min(34rem, 68dvh);
+}
+
+/* Side by side once there is room. The page is exactly one screen and does not
+   scroll: the way in stays on the left, and only the wall moves. A left column
+   taller than a short window scrolls on its own, also without a scrollbar. */
+@media (min-width: 64rem) {
+  .wall-shell {
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .wall-inner {
+    display: grid;
+    grid-template-columns: minmax(0, 27rem) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    gap: clamp(2rem, 4vw, 4rem);
+    align-items: stretch;
+    min-height: 0;
+    padding-inline: 2rem;
+  }
+
+  .wall-hero {
+    max-width: none;
+    max-height: 100%;
+    margin-inline: 0;
+    align-self: center;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .wall-hero::-webkit-scrollbar {
+    display: none;
+  }
+
+  .wall-hero > header {
+    text-align: left;
+  }
+
+  .wall-hero .gate-logo {
+    margin-inline: 0;
+  }
+
+  .wall-board {
+    max-height: none;
+    min-height: 0;
+  }
+}
+
+.wall-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(5.25rem, 1fr));
+  /* Memes are two cells square; without this a late one leaves a hole at the
+     end of the row before it. */
+  grid-auto-flow: dense;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.wall-tile > button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45rem;
+  width: 100%;
+  padding: 0.5rem 0.4rem 0.55rem;
+  border-radius: 0.9rem;
+  border: 1px solid rgba(255, 243, 226, 0.14);
+  background: rgba(255, 243, 226, 0.05);
+  transition:
+    transform 0.16s ease,
+    border-color 0.16s ease,
+    background 0.16s ease;
+}
+
+.wall-tile > button:hover {
+  transform: translateY(-3px) rotate(-1deg);
+  border-color: var(--color-turquesa);
+  background: rgba(255, 243, 226, 0.1);
+}
+
+.wall-tile .flag-face {
+  width: 100%;
+}
+
+/* Two lines tall whether the name takes one or two, so a row never wobbles. */
+.wall-name {
+  display: flex;
+  align-items: center;
+  min-height: 2.3em;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.15;
+  text-align: center;
+  text-wrap: balance;
+  color: rgba(255, 243, 226, 0.88);
+}
+
+/* A meme is a sticker slapped on the wall: two cells square, a little crooked. */
+.wall-meme {
+  grid-column: span 2;
+  grid-row: span 2;
+}
+
+.wall-meme > button {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 1rem;
+  border: 2px solid rgba(255, 201, 60, 0.55);
+  background: var(--color-nit-2);
+  box-shadow: 0 14px 30px -14px rgba(0, 0, 0, 0.8);
+  transform: rotate(var(--tilt, -1.5deg));
+  transition: transform 0.16s ease;
+}
+
+.wall-meme > button:hover {
+  transform: rotate(0deg) scale(1.03);
+}
+
+/* Fills the frame whatever shape the GIF is: they range from 92 to 378px wide
+   at the same height, and a sticker that leaves bars would look unfinished. */
+.wall-meme-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ---------------- the explorer ---------------- */
+
+.explorer-strip {
+  display: flex;
+  gap: 0.4rem;
+  width: 100%;
+  max-width: 46rem;
+  overflow-x: auto;
+  padding: 0.65rem 0.25rem 0.8rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 243, 226, 0.3) transparent;
+  mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent);
+}
+
+.explorer-chip {
+  position: relative;
+  flex: none;
+  padding: 0.3rem;
+  border-radius: 0.55rem;
+  border: 2px solid transparent;
+  opacity: 0.7;
+  transition:
+    opacity 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.15s ease;
+}
+
+.explorer-chip .flag-face {
+  width: 2.2rem;
+}
+
+.explorer-chip:hover {
+  opacity: 1;
+}
+
+.explorer-chip[aria-current="true"] {
+  opacity: 1;
+  border-color: var(--color-turquesa);
+  transform: scale(1.12);
+}
+
+.explorer-chip-check {
+  position: absolute;
+  top: -0.15rem;
+  right: -0.15rem;
+  display: grid;
+  place-items: center;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 999px;
+  background: var(--color-or);
+  color: var(--color-nit);
+  font-size: 0.65rem;
+  font-weight: 800;
+}
+
+/* ---------------- the contest (the public prize) ---------------- */
+
+.concurs-inner {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: safe center;
+  gap: clamp(1rem, 3vh, 1.75rem);
+  width: 100%;
+  max-width: 40rem;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+  padding-block: clamp(1rem, 4vh, 3rem);
+}
+
+/* Dashed and gold like the public prize's card on the rules page. */
+.vote-chosen {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: 1rem;
+  border: 2px dashed rgba(255, 201, 60, 0.6);
+  background: rgba(255, 201, 60, 0.08);
+}
+
+.vote-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.vote-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.6rem;
+  border-radius: 0.9rem;
+  border: 1px solid rgba(255, 243, 226, 0.14);
+  background: rgba(18, 10, 31, 0.45);
+}
+
+/* An eye, not a word: a word does not fit a phone beside a flag, a name and a
+   vote button. The label is on the button for anyone who cannot see the eye. */
+.vote-look {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 999px;
+  color: rgba(255, 243, 226, 0.6);
+  transition: color 0.16s ease, background 0.16s ease;
+}
+
+.vote-look:hover {
+  color: var(--color-turquesa);
+  background: rgba(255, 243, 226, 0.08);
+}
+
+.vote-go {
+  flex: none;
+  min-height: 2.75rem;
+  padding: 0.5rem 1.1rem;
+  border-radius: 999px;
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  color: var(--color-nit);
+  background: var(--color-or);
+  box-shadow: 0 3px 0 0 #b6801a;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.2s ease;
+}
+
+.vote-go:hover:not(:disabled) {
+  background: #ffd75f;
+}
+
+.vote-go:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 0 #b6801a;
+}
+
+.vote-go:disabled {
+  opacity: 0.5;
+  cursor: progress;
+}
+
+.vote-state {
+  flex: none;
+  padding-inline: 0.4rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: rgba(255, 243, 226, 0.55);
+}
+
+.vote-state-on {
+  color: var(--color-or);
+}
+
+/* The four prizes, as a ballot: a row each, the one being voted in lit, and
+   whatever has been picked in it alongside. */
+.ballot {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ballot-row {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.ballot-pick {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  align-items: center;
+  gap: 0.7rem;
+  min-height: 3.25rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 0.9rem;
+  border: 1px solid rgba(255, 243, 226, 0.14);
+  border-left: 4px solid var(--accent);
+  background: rgba(18, 10, 31, 0.45);
+  text-align: left;
+  transition: background 0.16s ease, border-color 0.16s ease;
+}
+
+.ballot-pick:hover {
+  background: rgba(255, 243, 226, 0.07);
+}
+
+.ballot-pick[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+}
+
+.ballot-name {
+  flex: 1;
+  min-width: 0;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.ballot-value {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  max-width: 50%;
+  font-size: 0.8rem;
+  color: rgba(255, 243, 226, 0.8);
+}
+
+.ballot-value-none {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 243, 226, 0.4);
+}
+
+.ballot-clear {
+  flex: none;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 999px;
+  color: rgba(255, 243, 226, 0.55);
+  transition: color 0.16s ease, background 0.16s ease;
+}
+
+.ballot-clear:hover {
+  color: var(--color-magenta);
+  background: rgba(255, 243, 226, 0.08);
+}
+
+/* The same four, as a row of pills inside the viewer. */
+.cat-pills {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
+.cat-pills > button {
+  min-height: 2.5rem;
+  padding-inline: 0.9rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 243, 226, 0.22);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 243, 226, 0.75);
+  transition: background 0.16s ease, color 0.16s ease;
+}
+
+.cat-pills > button[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--color-nit);
+}
+
+/* ---------------- the film before the page ---------------- */
+
+/* Full screen, above everything including the explorer (z-index 50 there). */
+.intro {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.9rem;
+  padding: max(0.5rem, env(safe-area-inset-top)) 0.5rem max(0.75rem, env(safe-area-inset-bottom));
+  /* The colour of the picture's top edge above it and of its bottom edge below
+     it, set from the video every few frames (see IntroGate). Between the two
+     the picture itself is showing, so this only has to be right at its edges. */
+  background: linear-gradient(
+    to bottom,
+    var(--intro-top, #000) 0,
+    var(--intro-top, #000) var(--intro-y0, 0px),
+    var(--intro-bottom, #000) var(--intro-y1, 100%),
+    var(--intro-bottom, #000) 100%
+  );
+  opacity: 1;
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+/* The curtain lifts: it fades and drifts a little closer, and lets clicks
+   through to the page while it does. */
+.intro-leaving {
+  opacity: 0;
+  transform: scale(1.04);
+  pointer-events: none;
+}
+
+/* As big as the screen allows, no frame: the edges dissolve into the
+   background, which is painted in the picture's own edge colours, so the
+   picture seems to run on to the edges of the screen. The clip is only 480 by
+   360, so at this size it is soft by nature, and a feathered edge suits that
+   better than a hard rectangle would. Two gradients, one across and one down,
+   multiplied by `intersect`. */
+.intro-frame {
+  position: relative;
+  width: min(100%, 90rem, calc((100dvh - 6rem) * 4 / 3));
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  -webkit-mask-image:
+    linear-gradient(to right, transparent 0, #000 12%, #000 88%, transparent 100%),
+    linear-gradient(to bottom, transparent 0, #000 12%, #000 88%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(to right, transparent 0, #000 12%, #000 88%, transparent 100%),
+    linear-gradient(to bottom, transparent 0, #000 12%, #000 88%, transparent 100%);
+  mask-composite: intersect;
+}
+
+.intro-video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* Under the picture rather than on it, where the feathering would eat it. */
+.intro-progress {
+  width: min(100%, 24rem);
+  height: 3px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(18, 10, 31, 0.35);
+}
+
+.intro-progress > span {
+  display: block;
+  height: 100%;
+  background: var(--color-paper);
+  transform-origin: left center;
+}
+
+/* Only shown when the browser would not start the film by itself. */
+.intro-play {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  background: rgba(18, 10, 31, 0.72);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-paper);
+}
+
+.intro-play > span {
+  display: grid;
+  place-items: center;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 999px;
+  background: var(--color-or);
+  color: var(--color-nit);
+  font-size: 1.4rem;
+  padding-left: 0.2rem;
+}
+
+/* On a pale picture the ghost buttons would vanish, so they sit on a dark pill. */
+.intro-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem 0.75rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(18, 10, 31, 0.6);
+  backdrop-filter: blur(6px);
+}
+
+/* ---------------- the two ways to choose ---------------- */
+
+/* Two buttons that read as one control: which one is lit says how the guest is
+   choosing right now. Search is the page, explore is the full-screen viewer. */
+.mode-switch {
+  display: inline-flex;
+  align-self: center;
+  padding: 0.25rem;
+  gap: 0.25rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 243, 226, 0.22);
+  background: rgba(18, 10, 31, 0.72);
+  backdrop-filter: blur(6px);
+}
+
+.mode-switch > button {
+  min-height: 40px;
+  padding-inline: 1.15rem;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 243, 226, 0.7);
+  transition: background 0.16s ease, color 0.16s ease;
+}
+
+.mode-switch > button:hover {
+  color: var(--color-paper);
+}
+
+.mode-switch > button[aria-pressed="true"] {
+  background: var(--color-or);
+  color: var(--color-nit);
+}
+
 /* ---------------- entrances ---------------- */
 
 .rise {

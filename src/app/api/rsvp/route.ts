@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { isValidEmail, isValidName, recordRsvp, type RsvpAnswer } from "@/lib/assign";
 import { deviceCookie, newDeviceId, readDeviceId } from "@/lib/device";
 import { clientIp } from "@/lib/request";
+import { phaseGuard } from "@/lib/phase-guard";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -18,6 +19,9 @@ const ANSWERS: readonly RsvpAnswer[] = ["maybe", "no"];
  * than only of those who took a country.
  */
 export async function POST(request: Request) {
+  const closed = phaseGuard("/api/rsvp");
+  if (closed) return closed;
+
   let body: unknown;
   try {
     body = await request.json();

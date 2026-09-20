@@ -6,12 +6,16 @@ import {
   reroll,
   RerollUsedError,
 } from "@/lib/assign";
+import { phaseGuard } from "@/lib/phase-guard";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /** The guest's one and only second attempt. The new country is final. */
 export async function POST(request: Request) {
+  const closed = phaseGuard("/api/reroll");
+  if (closed) return closed;
+
   let body: unknown;
   try {
     body = await request.json();

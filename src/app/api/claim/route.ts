@@ -10,11 +10,15 @@ import {
 import { deviceCookie, newDeviceId, readDeviceId } from "@/lib/device";
 import { checkEmailDomain } from "@/lib/email";
 import { clientIp } from "@/lib/request";
+import { phaseGuard } from "@/lib/phase-guard";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
+  const closed = phaseGuard("/api/claim");
+  if (closed) return closed;
+
   let body: unknown;
   try {
     body = await request.json();

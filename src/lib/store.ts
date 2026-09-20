@@ -1,5 +1,6 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import { isCategoryId, type CategoryId } from "@/data/categories";
 import { normalizeEmail } from "@/lib/email";
 
 /**
@@ -60,11 +61,28 @@ export type Guest = {
   deviceId?: string;
 };
 
+/**
+ * One guest's vote in one category. A guest has at most one per category:
+ * casting again replaces it, which is how a vote is changed. Across
+ * categories a country can only be picked once, and never their own.
+ */
+export type Vote = {
+  /** Canonical email of the guest who voted. With `category`, the unique key. */
+  voter: string;
+  /** A `CategoryId` from `src/data/categories.ts`. */
+  category: CategoryId;
+  /** The country they picked. Never the one they hold themselves. */
+  countryCode: string;
+  votedAt: string;
+};
+
 export type StoreData = {
   version: 1;
   assignments: Assignment[];
   /** Indexed by the same canonical email as `assignments`. */
   guests: Guest[];
+  /** Empty until the contest opens. Absent from documents written before it. */
+  votes: Vote[];
 };
 
 /**
@@ -74,7 +92,7 @@ export type StoreData = {
  * requests for the lifetime of the process.
  */
 function emptyStore(): StoreData {
-  return { version: 1, assignments: [], guests: [] };
+  return { version: 1, assignments: [], guests: [], votes: [] };
 }
 
 const BLOB_PATHNAME = "festa-disfresses/assignments.json";
@@ -167,6 +185,24 @@ function migrateGuest(raw: unknown): Guest | null {
   };
 }
 
+/** One stored vote, or null if the record is unusable. */
+function migrateVote(raw: unknown): Vote | null {
+  if (!raw || typeof raw !== "object") return null;
+  const v = raw as Partial<Vote>;
+  if (typeof v.voter !== "string" || typeof v.countryCode !== "string") return null;
+
+  return {
+    // Canonicalised like every other stored email, so a vote cast under one
+    // spelling of a mailbox still belongs to the guest holding that mailbox.
+    voter: normalizeEmail(v.voter),
+    // Votes from before there were categories were all for the one prize that
+    // existed then, the public's.
+    category: isCategoryId(v.category) ? v.category : "public",
+    countryCode: v.countryCode,
+    votedAt: typeof v.votedAt === "string" ? v.votedAt : new Date(0).toISOString(),
+  };
+}
+
 function parse(raw: string): StoreData {
   let parsed: Partial<StoreData>;
   try {
@@ -183,12 +219,25 @@ function parse(raw: string): StoreData {
   for (const g of guests.map(migrateGuest)) {
     if (g) byEmail.set(g.email, g);
   }
+  // Same for `votes`. It has to be carried through here rather than left to
+  // spread: this function rebuilds the document field by field, so a field it
+  // does not name is silently dropped by the very next write.
+  const votes = Array.isArray(parsed.votes) ? parsed.votes : [];
+  const byBallot = new Map<string, Vote>();
+  for (const v of votes.map(migrateVote)) {
+    // One vote per guest per category. If two records collapse onto one
+    // mailbox the later vote stands, since a later vote is a guest changing
+    // their mind.
+    const key = `${v?.voter}|${v?.category}`;
+    if (v && (byBallot.get(key)?.votedAt ?? "") <= v.votedAt) byBallot.set(key, v);
+  }
   return {
     version: 1,
     assignments: dedupe(
       parsed.assignments.map(migrate).filter((a): a is Assignment => a !== null),
     ),
     guests: [...byEmail.values()],
+    votes: [...byBallot.values()],
   };
 }
 

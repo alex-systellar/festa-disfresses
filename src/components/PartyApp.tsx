@@ -7,10 +7,15 @@ import { Farewell } from "@/components/Farewell";
 import { Gate } from "@/components/Gate";
 import { Reveal } from "@/components/Reveal";
 import { getSong } from "@/data/songs";
+import { errorCode, isClaimResult } from "@/lib/client-guards";
+import {
+  clearStoredGuest,
+  readStoredGuest,
+  writeStoredGuest,
+} from "@/lib/guest-storage";
 import { Rsvp, type RsvpAnswer } from "@/components/Rsvp";
 import { SlotReel } from "@/components/SlotReel";
 
-const STORAGE_KEY = "festa-disfresses:guest";
 // Deliberately permissive, mirroring the server: this gates a party.
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const MAX_NAME = 80;
@@ -29,6 +34,8 @@ const ERROR_TEXT = {
     "Aquest dispositiu ja té un país amb un altre correu. Un país per persona! Si de debò no ets tu, parla amb qui organitza la festa.",
   partyFull:
     "Ho sentim, la festa és plena. Ja s'han repartit tots els països.",
+  repartimentOver:
+    "El sorteig ja ha acabat. Recarrega la pàgina per veure quin país et va tocar.",
   rerollUsed: "Ja has fet servir la teva segona tirada. Aquest país és el bo.",
   noCountriesLeft:
     "Ja no queda cap altre país lliure. Aquest és el teu, i encara et queda la tirada.",
@@ -62,27 +69,6 @@ type GuestState = {
   name: string;
 };
 
-type StoredGuest = { email: string; name: string; rsvp: RsvpAnswer | null };
-
-function isClaimResult(value: unknown): value is ClaimResult {
-  if (typeof value !== "object" || value === null) return false;
-  const result = value as Record<string, unknown>;
-  if (typeof result.remaining !== "number") return false;
-  if (typeof result.canReroll !== "boolean") return false;
-  const country = result.country;
-  if (typeof country !== "object" || country === null) return false;
-  const fields = country as Record<string, unknown>;
-  return (
-    typeof fields.code === "string" &&
-    typeof fields.name === "string" &&
-    typeof fields.flagImage === "string" &&
-    Array.isArray(fields.colors) &&
-    fields.colors.length === 2 &&
-    typeof fields.anthem === "object" &&
-    fields.anthem !== null
-  );
-}
-
 function isRsvpAnswer(value: unknown): value is RsvpAnswer {
   return value === "yes" || value === "maybe" || value === "no";
 }
@@ -97,47 +83,6 @@ function isGuestState(value: unknown): value is GuestState {
   if (typeof v.name !== "string") return false;
   // Only the assigned branch promises a country, so only it is checked.
   return v.state === "assigned" ? isClaimResult(v.result) : true;
-}
-
-function errorCode(value: unknown): string | null {
-  if (typeof value !== "object" || value === null) return null;
-  const code = (value as Record<string, unknown>).error;
-  return typeof code === "string" ? code : null;
-}
-
-function readStoredGuest(): StoredGuest | null {
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    const parsed: unknown = JSON.parse(raw);
-    if (typeof parsed !== "object" || parsed === null) return null;
-    const guest = parsed as Record<string, unknown>;
-    if (typeof guest.email !== "string") return null;
-    return {
-      email: guest.email,
-      name: typeof guest.name === "string" ? guest.name : "",
-      // Written by later versions than the one that stored this record.
-      rsvp: isRsvpAnswer(guest.rsvp) ? guest.rsvp : null,
-    };
-  } catch {
-    return null;
-  }
-}
-
-function writeStoredGuest(guest: StoredGuest): void {
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(guest));
-  } catch {
-    // Private mode or a full quota: the reveal still works, it just won't stick.
-  }
-}
-
-function clearStoredGuest(): void {
-  try {
-    window.localStorage.removeItem(STORAGE_KEY);
-  } catch {
-    // Nothing to do — the gate is shown either way.
-  }
 }
 
 function prefersReducedMotion(): boolean {
@@ -193,6 +138,7 @@ export function PartyApp() {
     else if (code === "invalid_email_domain") setEmailError(ERROR_TEXT.invalidEmailDomain);
     else if (code === "invalid_name") setNameError(ERROR_TEXT.invalidName);
     else if (code === "party_full") setBannerError(ERROR_TEXT.partyFull);
+    else if (code === "repartiment_over") setBannerError(ERROR_TEXT.repartimentOver);
     else if (code === "device_limit") setBannerError(ERROR_TEXT.deviceLimit);
     else if (code === "ip_limit") setBannerError(ERROR_TEXT.ipLimit);
     else setBannerError(ERROR_TEXT.storage);
@@ -465,6 +411,8 @@ export function PartyApp() {
             current ? { ...current, canReroll: false } : current,
           );
           setRerollError(ERROR_TEXT.rerollUsed);
+        } else if (code === "repartiment_over") {
+          setRerollError(ERROR_TEXT.repartimentOver);
         } else if (code === "no_countries_left") {
           // The last country went while this guest was looking at theirs. The
           // reroll was not spent, but there is nothing to spend it on.
