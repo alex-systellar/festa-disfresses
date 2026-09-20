@@ -529,7 +529,7 @@ export const COUNTRIES: Country[] = [
     flagImage: "/flags/SCT.svg",
     colors: ["#0065BD", "#FFFFFF"],
     anthem: { title: "Flower of Scotland", source: "Flower of Scotland · The Royal Scots Dragoon Guards.wav" },
-    song: { search: "Scotland Forever Alexander Brothers", match: "scotland forever — the alexander brothers" },
+    song: { search: "Scotland Forever Studio All-Stars", match: "scotland forever — studio all-stars", id: 895023192 },
     dance: { id: "P1s5ihC2iSjcJCk8Kd", right: "9fxiS1EL6nvy0" },
   },
   {
