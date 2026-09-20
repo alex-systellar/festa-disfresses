@@ -427,7 +427,7 @@ export const COUNTRIES: Country[] = [
     flagImage: "/flags/CT.svg",
     colors: ["#FCDD09", "#DA121A"],
     anthem: { title: "Els Segadors", source: "Els Segadors.ogg" },
-    dance: { search: "sardana" },
+    dance: { id: "WRpHm7LLiOP1e67LnI", right: "kmLD1h52ghle4ZJUG9" },
   },
   {
     code: "EC",
