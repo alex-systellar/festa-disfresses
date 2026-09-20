@@ -27,7 +27,11 @@ const ERROR_TEXT = {
     "Ja s'han repartit prou països des d'aquesta connexió. Si sou més d'un a casa, parla amb qui organitza la festa.",
   deviceLimit:
     "Aquest dispositiu ja té un país amb un altre correu. Un país per persona! Si de debò no ets tu, parla amb qui organitza la festa.",
+  partyFull:
+    "Ho sentim, la festa és plena. Ja s'han repartit tots els països.",
   rerollUsed: "Ja has fet servir la teva segona tirada. Aquest país és el bo.",
+  noCountriesLeft:
+    "Ja no queda cap altre país lliure. Aquest és el teu, i encara et queda la tirada.",
   rerollMissing:
     "No trobem la teva inscripció. Torna a entrar el nom i el correu.",
 } as const;
@@ -188,6 +192,7 @@ export function PartyApp() {
     if (code === "invalid_email") setEmailError(ERROR_TEXT.invalidEmail);
     else if (code === "invalid_email_domain") setEmailError(ERROR_TEXT.invalidEmailDomain);
     else if (code === "invalid_name") setNameError(ERROR_TEXT.invalidName);
+    else if (code === "party_full") setBannerError(ERROR_TEXT.partyFull);
     else if (code === "device_limit") setBannerError(ERROR_TEXT.deviceLimit);
     else if (code === "ip_limit") setBannerError(ERROR_TEXT.ipLimit);
     else setBannerError(ERROR_TEXT.storage);
@@ -460,6 +465,13 @@ export function PartyApp() {
             current ? { ...current, canReroll: false } : current,
           );
           setRerollError(ERROR_TEXT.rerollUsed);
+        } else if (code === "no_countries_left") {
+          // The last country went while this guest was looking at theirs. The
+          // reroll was not spent, but there is nothing to spend it on.
+          setResult((current) =>
+            current ? { ...current, canReroll: false, remaining: 0 } : current,
+          );
+          setRerollError(ERROR_TEXT.noCountriesLeft);
         } else if (code === "not_found") {
           setRerollError(ERROR_TEXT.rerollMissing);
         } else {

@@ -31,7 +31,10 @@ export type ClaimResult = {
   name: string;
   /** False when this email had already been assigned — a returning guest. */
   isNew: boolean;
-  /** True when every country was taken and we had to reuse one. */
+  /**
+   * True only for an assignment written before the party was capped, when a
+   * full pool handed out a repeat. Nothing creates one any more.
+   */
   duplicate: boolean;
   /** True while the guest still has their one reroll in hand. */
   canReroll: boolean;
@@ -56,6 +59,11 @@ export type GuestState = {
 
 export class RerollUsedError extends Error {}
 export class NotFoundError extends Error {}
+
+/** Refused because every country is already held: there is no seat left. */
+export class PartyFullError extends Error {}
+/** A reroll with nowhere to go: every other country is held by somebody. */
+export class NoCountriesLeftError extends Error {}
 
 /** Refused because this browser already claimed under another address. */
 export class DeviceLimitError extends Error {}
@@ -116,13 +124,16 @@ function enforceLimits(data: StoreData, email: string, ip?: string, deviceId?: s
 }
 
 function toResult(assignment: Assignment, country: Country, data: StoreData, isNew: boolean): ClaimResult {
+  const remaining = remainingCount(data.assignments);
   return {
     country,
     name: assignment.name,
     isNew,
     duplicate: Boolean(assignment.duplicate),
-    canReroll: !assignment.rerolled,
-    remaining: remainingCount(data.assignments),
+    // A reroll needs somewhere to land; with the pool empty the button would
+    // only ever lead to a refusal.
+    canReroll: !assignment.rerolled && remaining > 0,
+    remaining,
   };
 }
 
@@ -174,21 +185,22 @@ function stateFrom(data: StoreData, email: string): GuestState {
   return { state: "new", result: null, rsvp: guest?.rsvp ?? null, name: guest?.name ?? "" };
 }
 
-/** Pick uniformly from the untaken countries, ignoring `exclude`. */
-function pick(data: StoreData, exclude?: string): { country: Country; duplicate: boolean } {
+/**
+ * Pick uniformly from the untaken countries, ignoring `exclude`. Null when
+ * there is nothing left to give — the party is capped at one guest per
+ * country, so an empty pool is a refusal, never a repeat.
+ */
+function pick(data: StoreData, exclude?: string): Country | null {
   const taken = new Set(data.assignments.map((a) => a.countryCode));
   if (exclude) taken.add(exclude);
 
   const pool = COUNTRIES.filter((c) => !taken.has(c.code));
-  if (pool.length > 0) {
-    return { country: pool[randomInt(pool.length)], duplicate: false };
-  }
+  return pool.length > 0 ? pool[randomInt(pool.length)] : null;
+}
 
-  // Pool exhausted (more guests than countries): keep the party working and
-  // mark the assignment as a knowing repeat.
-  const fallback = COUNTRIES.filter((c) => c.code !== exclude);
-  const candidates = fallback.length > 0 ? fallback : COUNTRIES;
-  return { country: candidates[randomInt(candidates.length)], duplicate: true };
+/** Whether every country is held. Legacy repeats cannot make this wrong: it counts countries, not rows. */
+function isFull(data: StoreData): boolean {
+  return remainingCount(data.assignments) === 0;
 }
 
 /**
@@ -247,9 +259,14 @@ export async function claim(
     // list was edited mid-party — in which case reassign rather than 500.
     if (existing) data.assignments = data.assignments.filter((a) => a.email !== email);
 
+    // Checked against this very read of the store, inside the locked
+    // read-modify-write: two guests racing for the last country cannot both
+    // win, because the loser retries against a document that now says full.
+    const country = pick(data);
+    if (!country) throw new PartyFullError(email);
+
     enforceLimits(data, email, ip, deviceId);
 
-    const { country, duplicate } = pick(data);
     const assignment: Assignment = {
       email,
       name,
@@ -257,7 +274,6 @@ export async function claim(
       assignedAt: new Date().toISOString(),
       ...(ip ? { ip } : {}),
       ...(deviceId ? { deviceId } : {}),
-      ...(duplicate ? { duplicate: true } : {}),
     };
     data.assignments.push(assignment);
     upsertGuest(data, email, name, "yes", ip, deviceId);
@@ -280,14 +296,15 @@ export async function reroll(rawEmail: string): Promise<ClaimResult> {
 
     const previous = existing.countryCode;
     // Exclude the old country so a reroll always actually changes something.
-    const { country, duplicate } = pick(data, previous);
+    const country = pick(data, previous);
+    if (!country) throw new NoCountriesLeftError(email);
 
     existing.previousCountryCode = previous;
     existing.countryCode = country.code;
     existing.rerolled = true;
     existing.assignedAt = new Date().toISOString();
-    if (duplicate) existing.duplicate = true;
-    else delete existing.duplicate;
+    // A fresh, unshared country: clears the flag on a pre-cap repeat.
+    delete existing.duplicate;
 
     return { value: toResult(existing, country, data, false), dirty: true };
   });
@@ -306,9 +323,9 @@ export async function lookup(rawEmail: string): Promise<GuestState> {
  * the moment the details are submitted, instead of after the guest has already
  * answered the RSVP and watched the reel start.
  *
- * Only a genuinely new guest is subject to the caps: someone coming back to
- * their own country, or changing a no to a yes, is never refused their own
- * record.
+ * Only a genuinely new guest is subject to the caps and to the party being
+ * full: someone coming back to their own country is never refused their own
+ * record. A no or a maybe that turns into a yes is refused later, by `claim`.
  */
 export async function precheck(
   rawEmail: string,
@@ -318,7 +335,10 @@ export async function precheck(
   const email = normalizeEmail(rawEmail);
   const { data } = await readStore();
   const state = stateFrom(data, email);
-  if (state.state === "new") enforceLimits(data, email, ip, deviceId);
+  if (state.state === "new") {
+    if (isFull(data)) throw new PartyFullError(email);
+    enforceLimits(data, email, ip, deviceId);
+  }
   return state;
 }
 

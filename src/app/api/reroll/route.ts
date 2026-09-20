@@ -1,5 +1,11 @@
 import { NextResponse } from "next/server";
-import { isValidEmail, NotFoundError, reroll, RerollUsedError } from "@/lib/assign";
+import {
+  isValidEmail,
+  NoCountriesLeftError,
+  NotFoundError,
+  reroll,
+  RerollUsedError,
+} from "@/lib/assign";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -27,6 +33,11 @@ export async function POST(request: Request) {
     }
     if (err instanceof RerollUsedError) {
       return NextResponse.json({ error: "reroll_used" }, { status: 409 });
+    }
+    // Every other country is held, so there is nowhere to reroll to. The guest
+    // keeps what they have and the reroll is not spent.
+    if (err instanceof NoCountriesLeftError) {
+      return NextResponse.json({ error: "no_countries_left" }, { status: 409 });
     }
     console.error("[reroll] failed", err);
     return NextResponse.json({ error: "storage_unavailable" }, { status: 500 });

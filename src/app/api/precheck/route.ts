@@ -4,6 +4,7 @@ import {
   IpLimitError,
   isValidEmail,
   isValidName,
+  PartyFullError,
   precheck,
 } from "@/lib/assign";
 import { deviceCookie, newDeviceId, readDeviceId } from "@/lib/device";
@@ -55,6 +56,11 @@ export async function POST(request: Request) {
     response.cookies.set(deviceCookie(deviceId));
     return response;
   } catch (err) {
+    // Every country is held: say so here, on the details screen, before the
+    // guest has answered anything. Only a guest with no country can hit this.
+    if (err instanceof PartyFullError) {
+      return NextResponse.json({ error: "party_full" }, { status: 409 });
+    }
     // 403, not 429: this is a refusal, not a rate limit. Retrying never helps.
     if (err instanceof DeviceLimitError) {
       return NextResponse.json({ error: "device_limit" }, { status: 403 });

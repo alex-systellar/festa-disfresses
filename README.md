@@ -39,17 +39,26 @@ countries and nobody has to coordinate anything.
    first country goes straight back into the pool for someone else; the second
    one is final. Only ever **one** country is persisted per guest.
 5. **Coming back** from any device with the same email returns the same country.
-6. If more than 42 people show up the pool runs dry. Rather than failing, the
-   app hands out a repeat and flags the assignment as `duplicate: true`, which
-   the admin dashboard surfaces so you know it happened.
+6. **The party is capped at the number of countries.** Once all 44 are held,
+   a new guest is told the party is full (`409 party_full`) and gets nothing —
+   the app never hands out a repeat. The refusal comes from `precheck`, on the
+   details screen and before any RSVP, and again from `claim`, which decides
+   inside the same locked read-modify-write that assigns, so two people racing
+   for the last country cannot both get it. A guest who already holds a country
+   is never refused, and once nothing is free the reroll button disappears
+   (`409 no_countries_left` if one is pressed anyway; the reroll is not spent).
+   A guest deleted from `/admin` frees their country and reopens the party.
+
+   `duplicate: true` survives only as a read-side flag for assignments written
+   before the cap existed; nothing sets it now.
 
 ### Endpoints
 
 | Route                 | Method | Body / query        | Notes                                                              |
 | --------------------- | ------ | ------------------- | ------------------------------------------------------------------ |
-| `/api/claim`          | POST   | `{ email, name }`   | Assigns (or returns) a country. `400 invalid_email`, `400 invalid_email_domain`, `400 invalid_name`, `429 ip_limit`, `500 storage_unavailable`. |
-| `/api/reroll`         | POST   | `{ email }`         | Spends the one reroll. `200` with the same shape as claim, `409 reroll_used`, `404 not_found`, `400 invalid_email`. |
-| `/api/precheck`       | POST   | `{ email, name }`   | Every check `claim` makes, assigning nothing. Answers a `GuestState`. `400 invalid_email` / `invalid_email_domain` / `invalid_name`, `403 device_limit` / `ip_limit`. |
+| `/api/claim`          | POST   | `{ email, name }`   | Assigns (or returns) a country. `400 invalid_email`, `400 invalid_email_domain`, `400 invalid_name`, `409 party_full`, `403 device_limit` / `ip_limit`, `500 storage_unavailable`. |
+| `/api/reroll`         | POST   | `{ email }`         | Spends the one reroll. `200` with the same shape as claim, `409 reroll_used`, `409 no_countries_left`, `404 not_found`, `400 invalid_email`. |
+| `/api/precheck`       | POST   | `{ email, name }`   | Every check `claim` makes, assigning nothing. Answers a `GuestState`. `400 invalid_email` / `invalid_email_domain` / `invalid_name`, `409 party_full`, `403 device_limit` / `ip_limit`. |
 | `/api/rsvp`           | POST   | `{ email, name, answer }` | Stores a `maybe` or a `no`. A `yes` goes through `claim`. `400 invalid_answer`. |
 | `/api/lookup?email=…` | GET    | —                   | What we know about an email. Answers a `GuestState`; never refuses, never writes. |
 | `/api/admin?key=…`    | GET    | —                   | Full dump for the dashboard, gated by `ADMIN_KEY`. `401 unauthorized`. |
@@ -228,7 +237,7 @@ silently lock out a couple sharing a laptop.
   country with its SVG flag, email, device id, IP, and relative + absolute
   timestamps;
 - badges: `re-tirada` when a guest spent their reroll (with the previous country
-  shown as `abans: …`), `duplicat` when the pool had run dry, a red
+  shown as `abans: …`), `duplicat` on an assignment made before the party was capped, a red
   `mateix dispositiu ×N` on same-browser collisions, and a secondary amber
   `compartida ×N` on shared IPs — both listing the other emails in their
   tooltip;
