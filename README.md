@@ -11,7 +11,7 @@ countries and nobody has to coordinate anything.
 
 - Guest view: `/`
 - Ops dashboard: `/admin` (Catalan, gated by `ADMIN_KEY`)
-- Countries: `src/data/countries.ts` (42 entries)
+- Countries: `src/data/countries.ts` (44 entries)
 
 ---
 
@@ -331,7 +331,7 @@ Everything about a country lives in `src/data/countries.ts`:
 ### Flags are SVGs, never emoji
 
 Every country renders from a local 4:3 SVG at `public/flags/<CODE>.svg`, pointed
-at by `flagImage` — which is **always set**, for all 42 countries. Render it
+at by `flagImage` — which is **always set**, for all 44 countries. Render it
 unconditionally:
 
 ```tsx

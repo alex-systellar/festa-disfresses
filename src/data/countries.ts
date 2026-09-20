@@ -1,5 +1,5 @@
 /**
- * The 42 party countries. Each guest gets one; the costume itself is up to
+ * The 44 party countries. Each guest gets one; the costume itself is up to
  * them — the app only hands out the country and its anthem. This file is the single source of truth:
  * `scripts/fetch-anthems.mjs` reads `anthem.source` from here to build
  * `public/anthems/<code>.mp3`.
@@ -521,6 +521,26 @@ export const COUNTRIES: Country[] = [
     anthem: { title: "La Borinqueña", source: "United States Navy Band - La Borinqueña.ogg" },
     song: { search: "NUEVAYoL Bad Bunny", match: "debí tirar más fotos" },
     dance: { id: "2AuqonCREnq8UkE9FR", right: "HFrlHntL3XrJ17K1EW" },
+  },
+  {
+    code: "SCT",
+    name: "Escòcia",
+    flag: "🏴󠁧󠁢󠁳󠁣󠁴󠁿",
+    flagImage: "/flags/SCT.svg",
+    colors: ["#0065BD", "#FFFFFF"],
+    anthem: { title: "Flower of Scotland", source: "Flower of Scotland · The Royal Scots Dragoon Guards.wav" },
+    song: { search: "Scotland Forever Alexander Brothers", match: "scotland forever — the alexander brothers" },
+    dance: { id: "P1s5ihC2iSjcJCk8Kd", right: "9fxiS1EL6nvy0" },
+  },
+  {
+    code: "MG",
+    name: "Madagascar",
+    flag: "🇲🇬",
+    flagImage: "/flags/MG.svg",
+    colors: ["#FC3D32", "#007E3A"],
+    anthem: { title: "Ry Tanindrazanay malala ô!", source: "Ry Tanindrazanay malala ô! (instrumental).ogg" },
+    song: { search: "I Like to Move It Reel 2 Real", match: "[radio edit] — reel 2 real" },
+    dance: { id: "XbgzkpzueQjzepnhLy", right: "OcFnEtNxZNLCE" },
   },
 ];
 

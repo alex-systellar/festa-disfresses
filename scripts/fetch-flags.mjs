@@ -21,7 +21,7 @@ const PKG = "flag-icons@7.5.0";
 const BASE = `https://cdn.jsdelivr.net/npm/${PKG}/flags/4x3`;
 
 /** Country code -> flag-icons file name. Only non-ISO-3166-1 codes need an entry. */
-const OVERRIDES = { CT: "es-ct" };
+const OVERRIDES = { CT: "es-ct", SCT: "gb-sct" };
 
 const force = process.argv.includes("--force");
 const { COUNTRIES } = await import(path.join(ROOT, "src/data/countries.ts"));

@@ -293,3 +293,17 @@ Performance: Banda do Batalhão da Guarda Presidencial
 - Author: unknown
 - Licence: Public domain
 - Source: https://commons.wikimedia.org/wiki/File:United_States_Navy_Band_-_La_Borinque%C3%B1a.ogg
+
+## 🏴󠁧󠁢󠁳󠁣󠁴󠁿 Escòcia — Flower of Scotland
+
+- File: `Flower of Scotland · The Royal Scots Dragoon Guards.wav`
+- Author: The Royal Scots Dragoon Guards
+- Licence: CC BY-SA 4.0
+- Source: https://commons.wikimedia.org/wiki/File:Flower_of_Scotland_%C2%B7_The_Royal_Scots_Dragoon_Guards.wav
+
+## 🇲🇬 Madagascar — Ry Tanindrazanay malala ô!
+
+- File: `Ry Tanindrazanay malala ô! (instrumental).ogg`
+- Author: unknown
+- Licence: Public domain
+- Source: https://commons.wikimedia.org/wiki/File:Ry_Tanindrazanay_malala_%C3%B4!_(instrumental).ogg
