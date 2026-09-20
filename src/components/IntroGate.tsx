@@ -44,13 +44,11 @@ const css = ([r, g, b]: Rgb) => `rgb(${Math.round(r)} ${Math.round(g)} ${Math.ro
 const LEAVE_MS = 700;
 
 /**
- * "boot"    server render and first paint: the curtain is already down, so the
- *           page underneath never flashes before the video starts
  * "playing" the video is running
  * "leaving" the video is over and the curtain is lifting
  * "done"    the page is all there is
  */
-type Stage = "boot" | "playing" | "leaving" | "done";
+type Stage = "playing" | "leaving" | "done";
 
 function storage(): Storage | null {
   try {
@@ -68,8 +66,7 @@ function storage(): Storage | null {
  * `?intro` plays it regardless, which is the quick way to see it again
  * without clearing storage.
  *
- * Decided on the client, not on the first paint: `localStorage` does not exist
- * on the server.
+ * Reads `localStorage`, which does not exist on the server: see `IntroGate`.
  */
 function shouldPlay(): boolean {
   if (new URLSearchParams(window.location.search).has("intro")) return true;
@@ -77,7 +74,17 @@ function shouldPlay(): boolean {
 }
 
 /** Something on the page that plays the video again. */
-const IntroContext = createContext<{ replay: () => void } | null>(null);
+const IntroContext = createContext<{ replay: () => void; waiting: boolean } | null>(null);
+
+/**
+ * Whether the page is still waiting for the film to end. True while the video
+ * plays, false the moment the curtain starts to lift, so something that wants
+ * to be seen from its first frame (a celebration) can hold back until then.
+ * False outside an `IntroGate`.
+ */
+export function useIntroWaiting(): boolean {
+  return useContext(IntroContext)?.waiting ?? false;
+}
 
 /**
  * A button that plays the video again, for wherever the page wants one. Draws
@@ -96,8 +103,13 @@ export function ReplayIntroButton({ className = "btn-ghost" }: { className?: str
 /**
  * The film before the page. Wraps a phase view (the wall of countries or the
  * contest) and covers it with a full-screen video until it ends or is skipped,
- * then lifts away onto a page that has been loaded, hydrated and had its
- * pictures fetched behind the curtain the whole time.
+ * then lifts away onto a page that has been rendered and had its pictures
+ * fetched behind the curtain the whole time.
+ *
+ * It goes in only once a guest has logged in, so the film and the page behind
+ * it are for the guests alone. That is also why it may read `localStorage` and
+ * the media query while it renders: it is never part of a server render, only
+ * ever mounted by a client that has already been through a login.
  *
  * Browsers refuse to start a video with sound before the guest has touched the
  * page, so the sound is tried first and, when it is refused, the video plays
@@ -110,26 +122,21 @@ export function ReplayIntroButton({ className = "btn-ghost" }: { className?: str
  * choose to.
  */
 export function IntroGate({ children }: { children: ReactNode }) {
-  const [stage, setStage] = useState<Stage>("boot");
+  // Whether this visit gets the video at all, and whether it starts by itself.
+  const [initial] = useState(() => ({
+    play: shouldPlay(),
+    calm: window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+  }));
+  const [stage, setStage] = useState<Stage>(initial.play ? "playing" : "done");
   const [muted, setMuted] = useState(false);
-  const [blocked, setBlocked] = useState(false);
+  const [blocked, setBlocked] = useState(initial.play && initial.calm);
   const [progress, setProgress] = useState(0);
   const video = useRef<HTMLVideoElement>(null);
   const skip = useRef<HTMLButtonElement>(null);
   const overlay = useRef<HTMLDivElement>(null);
   const frame = useRef<HTMLDivElement>(null);
   /** False for somebody who asked for less motion: the video waits for a tap. */
-  const autoplay = useRef(true);
-
-  // First client render: is this a visit that gets the video at all?
-  useEffect(() => {
-    // Deciding needs `window`, which is not there for the server render, so it
-    // cannot be the state's initial value: the two would disagree on hydration.
-    const play = shouldPlay();
-    autoplay.current = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    setBlocked(play && !autoplay.current);
-    setStage(play ? "playing" : "done");
-  }, []);
+  const autoplay = useRef(!initial.calm);
 
   // Start playback the moment the video is on screen.
   useEffect(() => {
@@ -274,7 +281,7 @@ export function IntroGate({ children }: { children: ReactNode }) {
   const covered = stage !== "done";
 
   return (
-    <IntroContext.Provider value={{ replay }}>
+    <IntroContext.Provider value={{ replay, waiting: stage === "playing" }}>
       {/* `inert` takes the page out of the tab order and the accessibility
           tree while the video is on top of it. It stays mounted, not deferred
           until the video ends, so it loads behind the curtain. */}

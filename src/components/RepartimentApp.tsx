@@ -6,10 +6,11 @@ import Link from "next/link";
 import { Explorer, useExplorer } from "@/components/Explorer";
 import { Flag } from "@/components/Flag";
 import { FlagMarquee } from "@/components/FlagMarquee";
-import { ReplayIntroButton } from "@/components/IntroGate";
+import { IntroGate, ReplayIntroButton, useIntroWaiting } from "@/components/IntroGate";
 import { LoginForm } from "@/components/LoginForm";
 import { Reveal } from "@/components/Reveal";
 import { useLogin } from "@/components/useLogin";
+import type { Session } from "@/components/useLogin";
 import { COUNTRIES, getCountry } from "@/data/countries";
 import { getDancers } from "@/data/dances";
 import { COUNTRIES_BY_NAME, firstName } from "@/lib/country-order";
@@ -62,28 +63,28 @@ function WallMeme({ code }: { code: string }) {
   );
 }
 
+type WallProps = {
+  session: Session;
+  view: "wall" | "mine";
+  celebrate: boolean;
+  onView: (view: "wall" | "mine") => void;
+  onLogout: () => void;
+};
+
 /**
- * `/` once the draw is over and the contest has not opened: everybody's
- * countries laid out on one wall, and a way for a guest to check theirs.
+ * The wall itself, for a guest who is logged in: their country, every country
+ * laid out around it, and the viewer.
  *
  * Nothing here says who wears what. The wall shows the whole list, held or not,
- * and logging in shows a guest only their own country.
+ * and shows a guest only their own country.
  */
-export function RepartimentApp() {
-  const [view, setView] = useState<"wall" | "mine">("wall");
-  /** Only a login just performed celebrates; a remembered one stays calm. */
-  const [celebrate, setCelebrate] = useState(false);
+function Wall({ session, view, celebrate, onView, onLogout }: WallProps) {
   const explorer = useExplorer();
-  const login = useLogin({
-    onLogin: () => {
-      setCelebrate(true);
-      setView("mine");
-    },
-  });
+  // A guest who has just logged in lands on their own country. It waits for the
+  // film to be over, so the moment is seen and not spent behind the curtain.
+  const waiting = useIntroWaiting();
 
-  const session = login.auth.status === "in" ? login.auth.session : null;
-
-  if (view === "mine" && session) {
+  if (view === "mine" && !waiting) {
     return (
       <Reveal
         result={session.result}
@@ -91,15 +92,8 @@ export function RepartimentApp() {
         mode="board"
         onReroll={() => {}}
         rerollError={null}
-        onBack={() => {
-          setCelebrate(false);
-          setView("wall");
-        }}
-        onReset={() => {
-          login.logout();
-          setCelebrate(false);
-          setView("wall");
-        }}
+        onBack={() => onView("wall")}
+        onReset={onLogout}
       />
     );
   }
@@ -127,39 +121,24 @@ export function RepartimentApp() {
             </h1>
           </header>
 
-          {login.auth.status === "boot" ? (
-            <div className="ticket p-5" aria-busy="true">
-              <p className="eyebrow blink">Un moment…</p>
-            </div>
-          ) : session ? (
-            <div className="ticket rise flex flex-col gap-4 p-5">
-              <p className="eyebrow">
-                Hola, {firstName(session.result.name || session.name)}!
-              </p>
-              <div className="flex items-center gap-4">
-                <Flag country={session.result.country} className="flag-face w-20 shrink-0" />
-                <div className="min-w-0">
-                  <p className="text-2xl font-extrabold leading-tight tracking-tight">
-                    {session.result.country.name}
-                  </p>
-                  <p className="text-sm text-paper/60">El teu país</p>
-                </div>
+          <div className="ticket rise flex flex-col gap-4 p-5">
+            <p className="eyebrow">Hola, {firstName(session.result.name || session.name)}!</p>
+            <div className="flex items-center gap-4">
+              <Flag country={session.result.country} className="flag-face w-20 shrink-0" />
+              <div className="min-w-0">
+                <p className="text-2xl font-extrabold leading-tight tracking-tight">
+                  {session.result.country.name}
+                </p>
+                <p className="text-sm text-paper/60">El teu país</p>
               </div>
-              <button type="button" onClick={() => setView("mine")} className="btn-festa btn-festa-sm">
-                Veure el meu país
-              </button>
-              <button type="button" onClick={login.logout} className="btn-ghost self-center">
-                No sóc jo · surt
-              </button>
             </div>
-          ) : (
-            <LoginForm
-              login={login}
-              eyebrow="Consulta el teu país"
-              intro="El sorteig ha acabat i ja no s'apunta ningú. Entra amb el nom i el correu amb què t'has apuntat per veure què et va tocar."
-              submitLabel="Entra"
-            />
-          )}
+            <button type="button" onClick={() => onView("mine")} className="btn-festa btn-festa-sm">
+              Veure el meu país
+            </button>
+            <button type="button" onClick={onLogout} className="btn-ghost self-center">
+              No sóc jo · surt
+            </button>
+          </div>
 
           <div className="flex flex-col items-center gap-1">
             <button type="button" onClick={() => explorer.openAt()} className="btn-outline">
@@ -230,6 +209,98 @@ export function RepartimentApp() {
           onClose={explorer.close}
         />
       ) : null}
+    </main>
+  );
+}
+
+/**
+ * `/` once the draw is over and the contest has not opened.
+ *
+ * A guest has to log in to get past the door: until they do there is only the
+ * login, and no wall, no viewer and no film. Once in, the film plays (see
+ * `IntroGate`) and then the wall of everybody's countries is there, with their
+ * own country up front. A guest who signed up on this browser is let straight
+ * through, so they type nothing.
+ */
+export function RepartimentApp() {
+  const [view, setView] = useState<"wall" | "mine">("wall");
+  /** Only a login just performed celebrates; a remembered one stays calm. */
+  const [celebrate, setCelebrate] = useState(false);
+  const login = useLogin({
+    onLogin: () => {
+      setCelebrate(true);
+      setView("mine");
+    },
+  });
+
+  const session = login.auth.status === "in" ? login.auth.session : null;
+
+  function logout() {
+    login.logout();
+    setCelebrate(false);
+    setView("wall");
+  }
+
+  if (session) {
+    return (
+      <IntroGate>
+        <Wall
+          session={session}
+          view={view}
+          celebrate={celebrate}
+          onView={(next) => {
+            if (next === "wall") setCelebrate(false);
+            setView(next);
+          }}
+          onLogout={logout}
+        />
+      </IntroGate>
+    );
+  }
+
+  return (
+    <main style={PAGE_STYLE} className="night gate-shell">
+      <FlagMarquee />
+
+      <div className="concurs-inner">
+        <header className="rise poster-fit text-center">
+          {/* eslint-disable-next-line @next/next/no-img-element -- static local SVG; the optimizer does not process SVG */}
+          <img
+            src="/logo-cup.svg"
+            alt=""
+            aria-hidden="true"
+            className="gate-logo mx-auto mb-4"
+          />
+          <p className="eyebrow">El sorteig ja ha acabat</p>
+          <h1 className="poster-title mt-4">
+            <span className="line-el">El</span>
+            <span>
+              Mundial<em className="tail">et</em>
+            </span>
+          </h1>
+        </header>
+
+        {login.auth.status === "boot" ? (
+          <div className="ticket p-5 text-center" aria-busy="true">
+            <p className="eyebrow blink">Un moment…</p>
+          </div>
+        ) : (
+          <LoginForm
+            login={login}
+            eyebrow="Només amb entrada"
+            intro="El sorteig ha acabat i ja no s'apunta ningú. Entra amb el nom i el correu amb què t'has apuntat per veure el vídeo, els països i què et va tocar."
+            submitLabel="Entra"
+          />
+        )}
+
+        <div className="flex justify-center">
+          <Link href="/com-funciona" className="btn-ghost">
+            Com funciona · les normes
+          </Link>
+        </div>
+      </div>
+
+      <FlagMarquee />
     </main>
   );
 }

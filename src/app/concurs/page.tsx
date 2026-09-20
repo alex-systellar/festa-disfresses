@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { IntroGate } from "@/components/IntroGate";
 import { ConcursApp } from "@/components/ConcursApp";
 
 export const metadata: Metadata = {
@@ -18,12 +17,8 @@ export const metadata: Metadata = {
  * `src/proxy.ts`, exactly like the wall of countries. Everything on it is
  * behind the login, and the API refuses a vote from anyone who is not.
  *
- * Opens with the same film as the wall of countries (see `IntroGate`).
+ * Like the wall of countries, it shows the film only after the login.
  */
 export default function ConcursPage() {
-  return (
-    <IntroGate>
-      <ConcursApp />
-    </IntroGate>
-  );
+  return <ConcursApp />;
 }

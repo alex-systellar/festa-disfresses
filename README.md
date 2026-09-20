@@ -248,13 +248,20 @@ the draw. `COUNT_DOWN` still wins over all of them.
 phase and the endpoint table that the proxy and the route handlers share.
 `/api/admin` is never refused.
 
+**Both pages are behind the login.** A visitor who has not logged in sees the
+masthead and the login form and nothing else: no film, no wall, no viewer, no
+list of countries. That is the page's doing, not the server's: the country data
+and the flag files are still public assets, so it keeps out the curious, not
+somebody who reads the bundle. A guest who signed up on this browser is logged
+in quietly on load and goes straight on.
+
 **The wall** shows every country's flag, with a few memes stuck among them
 (Sparta, the Conguitos, Morocco and Kazakhstan; the list is `WALL_MEMES` in
-`src/components/RepartimentApp.tsx`). A guest can log in with their name and
-email to see their own country. *Explora* opens the same viewer as the admin
-preview, one country at a time with its song and meme, and shows nobody's name
-and no assignments. There is no sign-up: a guest who is not on the list gets
-`no_match`.
+`src/components/RepartimentApp.tsx`), and the guest's own country up front.
+*Explora* opens the same viewer as the admin preview, one country at a time with
+its song and meme, and shows nobody's name and no assignments. There is no
+sign-up: a guest who is not on the list gets `no_match`, and one on the list
+without a country (a *no* or a *maybe*) gets `no_country`, so neither gets in.
 
 **The contest** is behind the same login, and votes in the four prizes on the
 rules page (`src/data/categories.ts`, which the rules page reads too). A guest
@@ -277,11 +284,13 @@ endpoint cannot be used to ask whether an address is on the list.
 
 **Deleting a guest** in `/admin` also deletes their vote.
 
-**The film.** In either phase, a visit opens with
-`public/intro/celebrate-our-differences.mp4` full screen (`IntroGate`), then
-lifts onto the page. It shows every time until it has been watched to the end
+**The film.** In either phase, a guest who has just logged in gets
+`public/intro/celebrate-our-differences.mp4` full screen (`IntroGate`), then it
+lifts onto the page, which has been rendering behind it. On the wall, a guest
+who has just typed their details lands on their own country once the film is
+over. It shows every time until it has been watched to the end
 or skipped once (`localStorage`, key `festa-disfresses:intro-seen`), and then
-the page opens directly. A *Torna a veure el vídeo* button on the page plays it
+the page opens directly after the login. A *Torna a veure el vídeo* button on the page plays it
 again, and `/?intro` forces it. It has a *Salta* button and stops on Esc.
 Browsers refuse sound before the first tap, so it starts with sound where that
 is allowed and muted, with an *Activa el so* button, where it is not; with

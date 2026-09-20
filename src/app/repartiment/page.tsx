@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { IntroGate } from "@/components/IntroGate";
 import { RepartimentApp } from "@/components/RepartimentApp";
 
 export const metadata: Metadata = {
@@ -18,12 +17,8 @@ export const metadata: Metadata = {
  * `src/proxy.ts`, which sends anyone who types this address straight back to
  * `/` — the page itself decides nothing, so it can stay static.
  *
- * Opens with the film (see `IntroGate`): once per tab, then the page.
+ * Everything on it is behind the login, film included (see `RepartimentApp`).
  */
 export default function RepartimentPage() {
-  return (
-    <IntroGate>
-      <RepartimentApp />
-    </IntroGate>
-  );
+  return <RepartimentApp />;
 }

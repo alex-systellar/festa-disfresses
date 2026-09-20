@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Explorer, useExplorer } from "@/components/Explorer";
 import { Flag } from "@/components/Flag";
 import { FlagMarquee } from "@/components/FlagMarquee";
+import { IntroGate, ReplayIntroButton } from "@/components/IntroGate";
 import { LoginForm } from "@/components/LoginForm";
 import { useLogin } from "@/components/useLogin";
 import { CATEGORIES, getCategory, type CategoryId, type MyVotes } from "@/data/categories";
@@ -17,7 +18,7 @@ import {
   firstName,
   searchCountries,
 } from "@/lib/country-order";
-import { ReplayIntroButton } from "@/components/IntroGate";
+
 
 const PAGE_STYLE = { "--c1": "#FFC93C", "--c2": "#FF2E88" } as CSSProperties;
 
@@ -49,7 +50,8 @@ function repeatedIn(value: unknown): string | null {
  * `/` while the prizes are open: a logged-in guest picks the costumes they
  * liked best, one for each prize.
  *
- * Only somebody who signed up can get past the login. There are two ways to
+ * Only somebody who signed up can get past the login, and until they do there
+ * is nothing but the login: the film and the page come after it. There are two ways to
  * pick — search the list and vote from it, or walk through the countries one at
  * a time in the explorer and vote from there — with a switch between them. A
  * guest has one vote per prize and may change it, cannot give one country two
@@ -165,7 +167,7 @@ export function ConcursApp() {
     setNotice(null);
   }, []);
 
-  return (
+  const page = (
     <main style={PAGE_STYLE} className="night gate-shell">
       <FlagMarquee />
 
@@ -424,4 +426,7 @@ export function ConcursApp() {
       ) : null}
     </main>
   );
+
+  // Only a logged-in guest gets the film, and the page behind it.
+  return session ? <IntroGate>{page}</IntroGate> : page;
 }
