@@ -539,7 +539,7 @@ export const COUNTRIES: Country[] = [
     flagImage: "/flags/MG.svg",
     colors: ["#FC3D32", "#007E3A"],
     anthem: { title: "Ry Tanindrazanay malala ô!", source: "Ry Tanindrazanay malala ô! (instrumental).ogg" },
-    song: { search: "I Like to Move It Reel 2 Real", match: "[radio edit] — reel 2 real" },
+    song: { search: "I Like to Move It Reel 2 Real", match: "[radio edit] — reel 2 real", start: 15 },
     dance: { id: "XbgzkpzueQjzepnhLy", right: "OcFnEtNxZNLCE" },
   },
 ];
