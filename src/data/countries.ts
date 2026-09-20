@@ -117,7 +117,7 @@ export const COUNTRIES: Country[] = [
     flagImage: "/flags/US.svg",
     colors: ["#B22234", "#3C3B6E"],
     anthem: { title: "The Star-Spangled Banner", source: "Star Spangled Banner instrumental.ogg" },
-    song: { search: "Free Bird Lynyrd Skynyrd", match: "pronounced leh-nerd skin-nerd", start: 15 },
+    song: { search: "Sweet Home Alabama Lynyrd Skynyrd", match: "sweet home alabama — lynyrd skynyrd", id: 1440846819 },
     dance: { id: "FbiL9rsmZN3ib2JSGo" },
   },
   {
@@ -218,7 +218,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#DE2910", "#FFDE00"],
     anthem: { title: "March of the Volunteers", source: "March of the Volunteers instrumental.ogg" },
     song: { search: "Yi Jian Mei Fei Yu-Ching", match: "xue hua piao piao" },
-    dance: { id: "0wAsZOZAzl587vGZdS" },
+    dance: { id: "0wAsZOZAzl587vGZdS", right: "ik97HC9tPnDq0" },
   },
   {
     code: "RU",
@@ -248,7 +248,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#00247D", "#FFFFFF"],
     anthem: { title: "Advance Australia Fair", source: "Advance Australia Fair (1927).ogg" },
     song: { search: "Down Under Men at Work", match: "down under — men at work" },
-    dance: { search: "kangaroo dance" },
+    dance: { search: "kangaroo dance", right: "yrc1kPwmLYlMioGz9l" },
   },
   {
     code: "JM",
@@ -456,7 +456,7 @@ export const COUNTRIES: Country[] = [
     flagImage: "/flags/VA.svg",
     colors: ["#FFE000", "#C9A227"],
     anthem: { title: "Inno e Marcia Pontificale", source: "United States Navy Band - Inno e Marcia Pontificale.ogg" },
-    song: { search: "Ave Maria Gregorian chant", match: "christ the king choir" },
+    song: { search: "O Fortuna Carmina Burana Andre Rieu", match: "o fortuna (from \"carmina burana\") [feat. carmen monarcha, mirusia & suzan erens] — andré rieu", id: 1777251777 },
     dance: { id: "12t8RaZDt1Qf2U", right: "xHq9AMgjcllwoELltC" },
   },
   {
@@ -467,7 +467,7 @@ export const COUNTRIES: Country[] = [
     colors: ["#007A36", "#D32011"],
     anthem: { title: "Milli Surood", source: "National Anthem of Afghanistan (Instrumental).ogg" },
     song: { search: "Ahmad Zahir", match: "tanha shudam" },
-    dance: { search: "attan dance" },
+    dance: { id: "3ohjUOUjEK1TXCQRva", right: "QgBNZbZ1xPIv1hCrzO" },
   },
   {
     code: "IL",

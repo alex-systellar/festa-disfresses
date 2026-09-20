@@ -1752,6 +1752,16 @@
       "pageUrl": "https://giphy.com/gifs/pizza-pope-12t8RaZDt1Qf2U",
       "transparent": true
     },
+    "AF": {
+      "id": "3ohjUOUjEK1TXCQRva",
+      "title": "Remembering Never Forget GIF",
+      "src": "https://media3.giphy.com/media/v1.Y2lkPTE4NTgzNDUydmU2aTAwNXp2NTJ6dXBxZ2dkemx3ZmJrd3dhMWp2cWJrb3hveWRhcCZlcD12MV9naWZzX2dpZklkJmN0PWc/3ohjUOUjEK1TXCQRva/200.webp",
+      "still": "https://media3.giphy.com/media/v1.Y2lkPTE4NTgzNDUydmU2aTAwNXp2NTJ6dXBxZ2dkemx3ZmJrd3dhMWp2cWJrb3hveWRhcCZlcD12MV9naWZzX2dpZklkJmN0PWc/3ohjUOUjEK1TXCQRva/200_s.gif",
+      "width": 270,
+      "height": 200,
+      "pageUrl": "https://giphy.com/gifs/911-wtc-world-trade-center-3ohjUOUjEK1TXCQRva",
+      "transparent": true
+    },
     "IL": {
       "id": "BJvOi54vJJmQqyMTef",
       "title": "Jew GIF",
@@ -1854,6 +1864,26 @@
       "pageUrl": "https://giphy.com/gifs/funny-family-guy-11pnJCYOx5pgbK",
       "transparent": true
     },
+    "CN": {
+      "id": "ik97HC9tPnDq0",
+      "title": "China Politics GIF",
+      "src": "https://media2.giphy.com/media/v1.Y2lkPTE4NTgzNDUyNTBoNnFyamRlMHl3dWF6ZThjODI3b2R3emZ5ZnIzenN2dXRibTVkcSZlcD12MV9naWZzX2dpZklkJmN0PWc/ik97HC9tPnDq0/200.webp",
+      "still": "https://media2.giphy.com/media/v1.Y2lkPTE4NTgzNDUyNTBoNnFyamRlMHl3dWF6ZThjODI3b2R3emZ5ZnIzenN2dXRibTVkcSZlcD12MV9naWZzX2dpZklkJmN0PWc/ik97HC9tPnDq0/200_s.gif",
+      "width": 356,
+      "height": 200,
+      "pageUrl": "https://giphy.com/gifs/politics-tiananmen-square-china-ik97HC9tPnDq0",
+      "transparent": true
+    },
+    "AU": {
+      "id": "yrc1kPwmLYlMioGz9l",
+      "title": "Dance Dancing Sticker",
+      "src": "https://media2.giphy.com/media/v1.Y2lkPTE4NTgzNDUycjBlMm1uenEwMXlydW04dTVseHdnN3FiODdyMnJwNDJzcGU0M2ZtcyZlcD12MV9naWZzX2dpZklkJmN0PXM/yrc1kPwmLYlMioGz9l/200.webp",
+      "still": "https://media2.giphy.com/media/v1.Y2lkPTE4NTgzNDUycjBlMm1uenEwMXlydW04dTVseHdnN3FiODdyMnJwNDJzcGU0M2ZtcyZlcD12MV9naWZzX2dpZklkJmN0PXM/yrc1kPwmLYlMioGz9l/200_s.gif",
+      "width": 200,
+      "height": 200,
+      "pageUrl": "https://giphy.com/stickers/transparent-yrc1kPwmLYlMioGz9l",
+      "transparent": true
+    },
     "NO": {
       "id": "EpKrzFY8yInltzciOG",
       "title": "The Last Kingdom Vikings GIF by Vinnie Camilleri",
@@ -1912,6 +1942,16 @@
       "width": 200,
       "height": 200,
       "pageUrl": "https://giphy.com/gifs/jesus-is-god-birth-tradcatholic-xHq9AMgjcllwoELltC",
+      "transparent": true
+    },
+    "AF": {
+      "id": "QgBNZbZ1xPIv1hCrzO",
+      "title": "Dubai Shampoo GIF",
+      "src": "https://media0.giphy.com/media/v1.Y2lkPTE4NTgzNDUycXZ6Z2U2dWNjM2Y0aWd3amQ2a2lidHlvZWlpajZkcmJsYTk2czZ3NyZlcD12MV9naWZzX2dpZklkJmN0PWc/QgBNZbZ1xPIv1hCrzO/200.webp",
+      "still": "https://media0.giphy.com/media/v1.Y2lkPTE4NTgzNDUycXZ6Z2U2dWNjM2Y0aWd3amQ2a2lidHlvZWlpajZkcmJsYTk2czZ3NyZlcD12MV9naWZzX2dpZklkJmN0PWc/QgBNZbZ1xPIv1hCrzO/200_s.gif",
+      "width": 160,
+      "height": 200,
+      "pageUrl": "https://giphy.com/gifs/headshoulders-three-arabs-shampoo-car-QgBNZbZ1xPIv1hCrzO",
       "transparent": true
     },
     "PR": {
