@@ -189,7 +189,7 @@ export function Explorer({ countries, startCode, onClose, onSearch, vote }: Expl
         onClick={onClose}
         className="fixed right-4 top-4 z-10 rounded-full border-2 border-paper/30 bg-nit/70 px-4 py-2 font-mono text-xs uppercase tracking-widest text-paper backdrop-blur transition hover:border-turquesa hover:text-turquesa"
       >
-        Tanca · esc
+        Tanca<span className="hidden sm:inline"> · esc</span>
       </button>
 
       <main

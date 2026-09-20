@@ -1185,19 +1185,43 @@ body {
   background: rgba(255, 201, 60, 0.08);
 }
 
+/* Four countries at a time, and the rest scroll inside the list — never a
+   scrollbar, so the fifth row peeks out under a fade to say there is more. The
+   rows are one fixed height so that "four" is four whatever the names say, and
+   the list is never taller than most of a short screen (a phone on its side).
+   The bottom padding is what the fade sits on: the last row scrolls clear of
+   it. */
 .vote-list {
+  --row: 3.9rem;
+  --gap: 0.5rem;
+  --fade: 1.5rem;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--gap);
+  max-height: min(calc(4 * var(--row) + 3 * var(--gap) + var(--fade)), 60dvh);
   margin: 0;
-  padding: 0;
+  padding: 0 0 var(--fade);
+  overflow-y: auto;
+  overscroll-behavior: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   list-style: none;
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - var(--fade)), transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 calc(100% - var(--fade)), transparent 100%);
+}
+
+.vote-list::-webkit-scrollbar {
+  display: none;
 }
 
 .vote-row {
+  box-sizing: border-box;
   display: flex;
+  flex: none;
   align-items: center;
   gap: 0.6rem;
+  height: var(--row);
   padding: 0.5rem 0.6rem;
   border-radius: 0.9rem;
   border: 1px solid rgba(255, 243, 226, 0.14);
@@ -1252,12 +1276,14 @@ body {
 
 .vote-state {
   flex: none;
-  padding-inline: 0.4rem;
+  max-width: 5.2rem;
+  padding-inline: 0.3rem;
   font-family: var(--font-mono);
-  font-size: 0.7rem;
-  letter-spacing: 0.12em;
+  font-size: 0.68rem;
+  line-height: 1.2;
+  letter-spacing: 0.1em;
+  text-align: center;
   text-transform: uppercase;
-  white-space: nowrap;
   color: rgba(255, 243, 226, 0.55);
 }
 
@@ -1370,6 +1396,44 @@ body {
   border-color: var(--accent);
   background: var(--accent);
   color: var(--color-nit);
+}
+
+/* A 320px phone: the row still has to hold a flag, a name, an eye and a verdict
+   or a button, so everything gives a little. */
+@media (max-width: 26rem) {
+  .vote-row {
+    gap: 0.4rem;
+    padding: 0.4rem 0.5rem;
+  }
+
+  .vote-row .flag-face {
+    width: 2.1rem;
+  }
+
+  .vote-look {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+
+  .vote-go {
+    padding-inline: 0.85rem;
+  }
+
+  .mode-switch > button {
+    padding-inline: 0.85rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+  }
+
+  .ballot-pick {
+    padding-inline: 0.6rem;
+    gap: 0.5rem;
+  }
+
+  .cat-pills > button {
+    padding-inline: 0.7rem;
+    font-size: 0.66rem;
+  }
 }
 
 /* ---------------- the film before the page ---------------- */

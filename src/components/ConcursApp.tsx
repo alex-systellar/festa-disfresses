@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import Link from "next/link";
 import { Explorer, useExplorer } from "@/components/Explorer";
@@ -90,6 +90,13 @@ export function ConcursApp() {
   // Built the first time it is needed, in the browser only.
   const index = useMemo(() => buildSearchIndex(COUNTRIES_BY_NAME), []);
   const results = useMemo(() => searchCountries(COUNTRIES_BY_NAME, index, query), [index, query]);
+
+  // A new search starts at the top of its own list, not wherever the last one
+  // was scrolled to.
+  const list = useRef<HTMLUListElement>(null);
+  useEffect(() => {
+    list.current?.scrollTo({ top: 0 });
+  }, [query]);
 
   /** A vote in the prize being looked at, or `null` to take it back. */
   const castVote = useCallback(
@@ -321,7 +328,7 @@ export function ConcursApp() {
                   Cap país es diu així. Prova-ho amb un altre nom.
                 </p>
               ) : (
-                <ul className="vote-list" aria-label={`Països per a ${active.name}`}>
+                <ul ref={list} className="vote-list" aria-label={`Països per a ${active.name}`}>
                   {results.map((country) => {
                     const own = country.code === ownCode;
                     const mine = country.code === myVote;
@@ -329,10 +336,14 @@ export function ConcursApp() {
                     return (
                       <li key={country.code} className="vote-row">
                         <Flag country={country} decorative className="flag-face w-10 shrink-0" />
+                        {/* One line when there is a note under it, two when there is not:
+                            either way the row keeps the one height the list counts by. */}
                         <span className="min-w-0 flex-1 font-semibold leading-tight">
-                          {country.name}
+                          <span className={used ? "block truncate" : "line-clamp-2"}>
+                            {country.name}
+                          </span>
                           {used ? (
-                            <span className="block font-mono text-[0.65rem] font-normal uppercase tracking-wider text-paper/45">
+                            <span className="block truncate font-mono text-[0.65rem] font-normal uppercase tracking-wider text-paper/45">
                               Ja votat a «{used}»
                             </span>
                           ) : null}
